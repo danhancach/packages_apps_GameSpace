@@ -107,6 +107,18 @@ class AppSettings @Inject constructor(private val context: Context) {
         get() = db.getBoolean(KEY_PULSE_BASS_DISABLE, true)
         set(it) = db.edit().putBoolean(KEY_PULSE_BASS_DISABLE, it).apply()
 
+    var autoHspc
+        get() = db.getBoolean(KEY_AUTO_HSPC, false)
+        set(value) = db.edit().putBoolean(KEY_AUTO_HSPC, value).apply()
+
+    var autoHighTouch
+        get() = db.getBoolean(KEY_AUTO_HIGH_TOUCH, false)
+        set(value) = db.edit().putBoolean(KEY_AUTO_HIGH_TOUCH, value).apply()
+
+    var iconVault
+        get() = db.getBoolean(KEY_ICON_VAULT, false)
+        set(value) = db.edit().putBoolean(KEY_ICON_VAULT, value).apply()
+
     companion object {
         const val KEY_AUTO_BRIGHTNESS_DISABLE = "gamespace_auto_brightness_disabled"
         const val KEY_3SCREENSHOT_DISABLE = "gamespace_tfgesture_disabled"
@@ -124,5 +136,8 @@ class AppSettings @Inject constructor(private val context: Context) {
         const val KEY_ICON_IDLE_ALPHA = "gamespace_icon_idle_alpha"
         const val KEY_AUTO_DND = "gamespace_auto_dnd"
         const val KEY_PULSE_BASS_DISABLE = "gamespace_pulse_bass_haptics_disabled"
+        const val KEY_AUTO_HSPC = "gamespace_auto_hspc"
+        const val KEY_AUTO_HIGH_TOUCH = "gamespace_auto_high_touch"
+        const val KEY_ICON_VAULT = "gamespace_icon_vault"
     }
 }

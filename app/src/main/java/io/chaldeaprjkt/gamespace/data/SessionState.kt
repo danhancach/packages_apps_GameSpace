@@ -28,4 +28,6 @@ data class SessionState(
     var threeScreenshot: Int = 0,
     var ringerMode: Int = AudioManager.RINGER_MODE_NORMAL,
     var pulseBassHaptics: Int = 0,
+    var hspcEnabled: Boolean? = null,
+    var highTouchPolling: Boolean? = null,
 )

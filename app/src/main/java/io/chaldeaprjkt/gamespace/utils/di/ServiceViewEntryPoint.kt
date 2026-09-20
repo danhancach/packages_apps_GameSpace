@@ -4,6 +4,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.chaldeaprjkt.gamespace.data.AppSettings
+import io.chaldeaprjkt.gamespace.data.GameIconVault
 import io.chaldeaprjkt.gamespace.data.SystemSettings
 import io.chaldeaprjkt.gamespace.utils.GameModeUtils
 import io.chaldeaprjkt.gamespace.utils.ScreenUtils
@@ -16,4 +17,5 @@ interface ServiceViewEntryPoint {
     fun systemSettings(): SystemSettings
     fun screenUtils(): ScreenUtils
     fun gameModeUtils(): GameModeUtils
+    fun gameIconVault(): GameIconVault
 }

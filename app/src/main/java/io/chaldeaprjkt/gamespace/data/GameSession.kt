@@ -63,6 +63,8 @@ class GameSession @Inject constructor(
             threeScreenshot = systemSettings.threeScreenshot,
             ringerMode = audioManager.ringerModeInternal,
             pulseBassHaptics = systemSettings.pulseBassHaptics,
+            hspcEnabled = systemSettings.hspcEnabled,
+            highTouchPolling = systemSettings.highTouchPollingEnabled,
         )
         if (appSettings.noAutoBrightness) {
             systemSettings.autoBrightness = false
@@ -83,6 +85,12 @@ class GameSession @Inject constructor(
         if (appSettings.noPulseBassHaptics) {
             systemSettings.pulseBassHaptics = 0
         }
+        if (appSettings.autoHspc) {
+            systemSettings.hspcEnabled = true
+        }
+        if (appSettings.autoHighTouch) {
+            systemSettings.highTouchPollingEnabled = true
+        }
     }
 
     fun unregister() {
@@ -102,6 +110,12 @@ class GameSession @Inject constructor(
         }
         if (appSettings.noPulseBassHaptics) {
             systemSettings.pulseBassHaptics = orig.pulseBassHaptics
+        }
+        if (appSettings.autoHspc) {
+            orig.hspcEnabled?.let { systemSettings.hspcEnabled = it }
+        }
+        if (appSettings.autoHighTouch) {
+            orig.highTouchPolling?.let { systemSettings.highTouchPollingEnabled = it }
         }
         systemSettings.stayAwake = false
         state = null

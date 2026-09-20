@@ -8,12 +8,19 @@
 
     <!-- Game Space -->
     <string name="settings_title">Game Space</string>
+    <string name="tab_library">Library</string>
+    <string name="tab_settings">Settings</string>
     <string name="app_selector_label">Pick your game</string>
     <string name="in_game_preferences_title">In-game options</string>
     <string name="game_list_title">Library</string>
+    <string name="library_options_title">Library options</string>
     <string name="app_search_title">Search</string>
     <string name="add_game">Add game</string>
     <string name="launch_game">Launch game</string>
+
+    <!-- Icon vault (AxSandbox hide from launcher) -->
+    <string name="icon_vault_title">Store game icons</string>
+    <string name="icon_vault_summary">Hide games in the library from the home screen and app drawer. Launch them from Game Space instead</string>
 
     <!-- Quick start apps -->
     <string name="quick_start_apps_title">Quick Start Apps</string>
@@ -67,6 +74,14 @@
     <!-- Bypass charging -->
     <string name="bypass_charge_enabled_title">Bypass charging</string>
     <string name="bypass_charge_enabled_summary">Enable bypass charging while playing games</string>
+
+    <!-- H.S. Power Control (Sony XperiaCharger) -->
+    <string name="auto_hspc_title">H.S. Power Control</string>
+    <string name="auto_hspc_summary">Automatically enable H.S. Power Control while playing games to reduce heat by powering the device from the charger instead of charging the battery</string>
+
+    <!-- High touch polling rate -->
+    <string name="auto_high_touch_title">High touch polling rate</string>
+    <string name="auto_high_touch_summary">Automatically increase touchscreen polling rate while playing games</string>
 
     <!-- Call overlay -->
     <string name="call_overlay_enabled_title">Call overlay</string>
