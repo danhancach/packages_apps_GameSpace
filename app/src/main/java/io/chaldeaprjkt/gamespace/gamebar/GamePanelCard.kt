@@ -155,6 +155,7 @@ fun GamePanelContent(
     maxHeight: Dp = Dp.Unspecified,
 ) {
     var isEditing by remember { mutableStateOf(false) }
+    var panelTab by remember { mutableStateOf(TileCategory.GAME) }
 
     val scrollState = rememberScrollState()
 
@@ -171,32 +172,52 @@ fun GamePanelContent(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         if (!isEditing) {
-            HeaderInfoBar(
-                modifier = Modifier.fillMaxWidth(),
-                headerExpanded = headerExpanded,
-                time = time,
-                currentMode = selectedMode,
-                onModeChange = onModeChange,
-                fpsInteractor = fpsInteractor,
-                onToggleExpand = onToggleExpand,
-                onEditClick = { isEditing = true },
-                tileRepository = tileRepository
+            PanelCategoryTabs(
+                selected = panelTab,
+                onSelected = { panelTab = it },
             )
 
-            if (apps.isEmpty() == false) {
-                QuickStartAppSidebar(apps = apps)
+            when (panelTab) {
+                TileCategory.GAME -> {
+                    HeaderInfoBar(
+                        modifier = Modifier.fillMaxWidth(),
+                        headerExpanded = headerExpanded,
+                        time = time,
+                        currentMode = selectedMode,
+                        onModeChange = onModeChange,
+                        fpsInteractor = fpsInteractor,
+                        onToggleExpand = onToggleExpand,
+                        onEditClick = { isEditing = true },
+                        tileRepository = tileRepository
+                    )
+
+                    if (apps.isNotEmpty()) {
+                        QuickStartAppSidebar(apps = apps)
+                    }
+
+                    PanelTileSection(
+                        interactor = interactor,
+                        tileRepository = tileRepository,
+                        category = TileCategory.GAME,
+                        showBrightness = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                TileCategory.SYSTEM -> {
+                    SystemTabToolbar(onEditClick = { isEditing = true })
+                    PanelTileSection(
+                        interactor = interactor,
+                        tileRepository = tileRepository,
+                        category = TileCategory.SYSTEM,
+                        showBrightness = false,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
-
-            PanelContent(
-                interactor = interactor,
-                tileRepository = tileRepository,
-                currentMode = selectedMode,
-                onEditClick = { isEditing = true },
-                modifier = Modifier.fillMaxWidth()
-            )
         } else {
             TileEditPanel(
                 tileRepository = tileRepository,
+                category = panelTab,
                 onClose = { isEditing = false }
             )
         }
@@ -204,25 +225,81 @@ fun GamePanelContent(
 }
 
 @Composable
-fun PanelContent(
+private fun PanelCategoryTabs(
+    selected: TileCategory,
+    onSelected: (TileCategory) -> Unit,
+) {
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        TileCategory.entries.forEachIndexed { index, category ->
+            SegmentedButton(
+                selected = selected == category,
+                onClick = { onSelected(category) },
+                shape = SegmentedButtonDefaults.itemShape(
+                    index = index,
+                    count = TileCategory.entries.size,
+                ),
+                label = {
+                    Text(
+                        text = stringResource(
+                            when (category) {
+                                TileCategory.GAME -> R.string.panel_tab_game
+                                TileCategory.SYSTEM -> R.string.panel_tab_system
+                            }
+                        )
+                    )
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun SystemTabToolbar(onEditClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(12.dp),
+            )
+            .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.panel_system_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        IconButton(onClick = onEditClick) {
+            Icon(
+                painter = painterResource(R.drawable.materialsymbols_ic_edit_rounded_filled),
+                contentDescription = stringResource(R.string.cd_edit_tiles),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+fun PanelTileSection(
     interactor: BrightnessInteractor,
     tileRepository: TileRepository,
-    currentMode: GameMode,
-    onEditClick: () -> Unit,
+    category: TileCategory,
+    showBrightness: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val tiles = tileRepository.tiles
+    val tiles = tileRepository.tilesFor(category)
     val tilesPerPage = 8
-    val pages by remember {
-        derivedStateOf { tiles.chunked(tilesPerPage) }
-    }
-    val pagerState = rememberPagerState { pages.size }
+    val tileSnapshot = tiles.toList()
+    val pages = tileSnapshot.chunked(tilesPerPage).ifEmpty { listOf(emptyList()) }
+    val pagerState = rememberPagerState(pageCount = { pages.size.coerceAtLeast(1) })
 
     Column(
         modifier = modifier.padding(start = 4.dp, end = 4.dp, bottom = 0.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        if (tileRepository.isBrightnessVisible.value) {
+        if (showBrightness && tileRepository.isBrightnessVisible.value) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -234,10 +311,23 @@ fun PanelContent(
             }
         }
 
+        if (tiles.isEmpty()) {
+            Text(
+                text = stringResource(R.string.panel_no_tiles),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                textAlign = TextAlign.Center,
+            )
+            return@Column
+        }
+
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxWidth(),
-            key = { pageIndex -> "page_$pageIndex" }
+            key = { pageIndex -> "${category.name}_page_$pageIndex" }
         ) { pageIndex ->
             val pageTiles = pages[pageIndex]
 
@@ -271,8 +361,7 @@ fun PanelContent(
 
         if (pages.size > 1) {
             Row(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally),
+                modifier = Modifier.align(Alignment.CenterHorizontally),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 repeat(pages.size) { index ->
@@ -292,6 +381,24 @@ fun PanelContent(
             }
         }
     }
+}
+
+/** @deprecated Use [PanelTileSection]. */
+@Composable
+fun PanelContent(
+    interactor: BrightnessInteractor,
+    tileRepository: TileRepository,
+    currentMode: GameMode,
+    onEditClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    PanelTileSection(
+        interactor = interactor,
+        tileRepository = tileRepository,
+        category = TileCategory.GAME,
+        showBrightness = true,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -490,13 +597,17 @@ private fun InfoItem(
 @Composable
 fun TileEditPanel(
     tileRepository: TileRepository,
+    category: TileCategory,
     onClose: () -> Unit
 ) {
-    val allTiles = remember { tileRepository.allAvailableTiles }
-    val dragDropState = remember { TileDragDropState(tileRepository.tiles, columns = 2) }
+    val activeTiles = tileRepository.tilesFor(category)
+    val allTiles = remember(category) { tileRepository.allAvailableTiles(category) }
+    val dragDropState = remember(category) {
+        TileDragDropState(activeTiles.toList(), columns = 2)
+    }
 
-    val availableList = remember {
-        val activeIds = tileRepository.tiles.map { it.id }.toSet()
+    val availableList = remember(category) {
+        val activeIds = activeTiles.map { it.id }.toSet()
         allTiles.filter { it.id !in activeIds }
             .map { DragTileData(it.id, it.label, it.icon) }
             .toMutableStateList()
@@ -505,6 +616,10 @@ fun TileEditPanel(
     var activeGridOffset by remember { mutableStateOf(Offset.Zero) }
 
     val localMaxHeight = (LocalConfiguration.current.screenHeightDp - 64).dp
+
+    fun persistSelection() {
+        tileRepository.updateTileSelection(category, dragDropState.tileIds())
+    }
 
     Column(
         modifier = Modifier
@@ -522,10 +637,19 @@ fun TileEditPanel(
                     contentDescription = stringResource(R.string.back)
                 )
             }
-            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = stringResource(
+                    when (category) {
+                        TileCategory.GAME -> R.string.panel_tab_game
+                        TileCategory.SYSTEM -> R.string.panel_tab_system
+                    }
+                ),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
             Button(
                 onClick = {
-                    tileRepository.updateTileSelection(dragDropState.tileIds())
+                    persistSelection()
                     onClose()
                 }
             ) {
@@ -542,29 +666,31 @@ fun TileEditPanel(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
-                .padding(12.dp)
-        ) {
-            Text(stringResource(R.string.panel_options), style = MaterialTheme.typography.titleMedium)
+        if (category == TileCategory.GAME) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                    .padding(12.dp)
+            ) {
+                Text(stringResource(R.string.panel_options), style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                SettingToggleRow(
+                    title = stringResource(R.string.brightness_slider),
+                    checked = tileRepository.isBrightnessVisible.value,
+                    onCheckedChange = { tileRepository.setBrightnessEnabled(it) }
+                )
+
+                SettingToggleRow(
+                    title = stringResource(R.string.fps_graph),
+                    checked = tileRepository.isFpsGraphVisible.value,
+                    onCheckedChange = { tileRepository.setFpsGraphEnabled(it) }
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
-
-            SettingToggleRow(
-                title = stringResource(R.string.brightness_slider),
-                checked = tileRepository.isBrightnessVisible.value,
-                onCheckedChange = { tileRepository.setBrightnessEnabled(it) }
-            )
-
-            SettingToggleRow(
-                title = stringResource(R.string.fps_graph),
-                checked = tileRepository.isFpsGraphVisible.value,
-                onCheckedChange = { tileRepository.setFpsGraphEnabled(it) }
-            )
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             stringResource(R.string.selected_tiles),
@@ -589,7 +715,7 @@ fun TileEditPanel(
                             availableList.removeAll { it.id == dragged.id }
                         }
                     }
-                    tileRepository.updateTileSelection(ids)
+                    tileRepository.updateTileSelection(category, ids)
                 },
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -642,7 +768,7 @@ fun TileEditPanel(
                                             val removed = dragDropState.removeTile(tile.id)
                                             if (removed != null) {
                                                 availableList.add(removed)
-                                                tileRepository.updateTileSelection(dragDropState.tileIds())
+                                                persistSelection()
                                             }
                                         },
                                     )
@@ -686,7 +812,7 @@ fun TileEditPanel(
                     val removed = dragDropState.removeTile(id)
                     if (removed != null) {
                         availableList.add(removed)
-                        tileRepository.updateTileSelection(dragDropState.tileIds())
+                        persistSelection()
                     }
                 },
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -714,7 +840,7 @@ fun TileEditPanel(
                                 onAction = {
                                     availableList.remove(tile)
                                     dragDropState.addTile(tile)
-                                    tileRepository.updateTileSelection(dragDropState.tileIds())
+                                    persistSelection()
                                 },
                             )
                         }

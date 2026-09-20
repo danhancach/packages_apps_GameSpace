@@ -71,6 +71,16 @@ class AppSettings @Inject constructor(private val context: Context) {
         get() = db.getString(KEY_TILE_ORDER, null)?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
         set(value) = db.edit().putString(KEY_TILE_ORDER, value.joinToString(",")).apply()
 
+    var tileOrderGame: List<String>
+        get() = db.getString(KEY_TILE_ORDER_GAME, null)?.split(",")?.filter { it.isNotBlank() }
+            ?: emptyList()
+        set(value) = db.edit().putString(KEY_TILE_ORDER_GAME, value.joinToString(",")).apply()
+
+    var tileOrderSystem: List<String>
+        get() = db.getString(KEY_TILE_ORDER_SYSTEM, null)?.split(",")?.filter { it.isNotBlank() }
+            ?: emptyList()
+        set(value) = db.edit().putString(KEY_TILE_ORDER_SYSTEM, value.joinToString(",")).apply()
+
     var brightnessEnabled: Boolean
         get() = db.getBoolean(KEY_BRIGHTNESS_ENABLED, true)
         set(value) = db.edit().putBoolean(KEY_BRIGHTNESS_ENABLED, value).apply()
@@ -129,6 +139,8 @@ class AppSettings @Inject constructor(private val context: Context) {
         const val KEY_LOCK_GESTURE = "gamespace_lock_gesture"
         const val KEY_MENU_OPACITY = "gamespace_menu_opacity"
         const val KEY_TILE_ORDER = "tile_order"
+        const val KEY_TILE_ORDER_GAME = "tile_order_game"
+        const val KEY_TILE_ORDER_SYSTEM = "tile_order_system"
         const val KEY_BRIGHTNESS_ENABLED = "brightness_enabled"
         const val KEY_FPS_GRAPH_ENABLED = "fps_graph_enabled"
         const val KEY_QUICK_START_APPS = "quick_start_apps"
