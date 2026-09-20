@@ -101,7 +101,13 @@
     <string name="game_mode_battery">Battery</string>
 
     <!-- Game Panel -->
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+    <string name="panel_tab_game">Game</string>
+    <string name="panel_tab_system">System</string>
+    <string name="panel_system_hint">Quick system toggles while gaming</string>
+    <string name="panel_no_tiles">No tiles yet — tap edit to add</string>
     <string name="panel_options">Panel Options</string>
     <string name="brightness_slider">Brightness Slider</string>
     <string name="fps_graph">FPS Graph</string>

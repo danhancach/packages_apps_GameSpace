@@ -116,13 +116,26 @@ class TileRepository @Inject constructor(
         }
     }
 
-    private val _tileOrder = mutableStateListOf<String>()
+    private val _gameTileOrder = mutableStateListOf<String>()
+    private val _systemTileOrder = mutableStateListOf<String>()
+
+    private val _gameTiles = mutableStateListOf<TileAction>()
+    private val _systemTiles = mutableStateListOf<TileAction>()
+
+    fun tilesFor(category: TileCategory): SnapshotStateList<TileAction> =
+        when (category) {
+            TileCategory.GAME -> _gameTiles
+            TileCategory.SYSTEM -> _systemTiles
+        }
+
+    fun allAvailableTiles(category: TileCategory): List<TileAction> =
+        defaultTiles.filter { TileCategories.categoryOf(it.id) == category }
+
+    /** @deprecated Use [tilesFor]; kept for any leftover callers during migrate. */
+    val tiles: SnapshotStateList<TileAction> get() = _gameTiles
 
     val allAvailableTiles: List<TileAction>
         get() = defaultTiles
-
-    private val _tiles = mutableStateListOf<TileAction>()
-    val tiles: SnapshotStateList<TileAction> get() = _tiles
 
     val isBrightnessVisible: MutableState<Boolean> = mutableStateOf(appSettings.brightnessEnabled)
     val isFpsGraphVisible: MutableState<Boolean> = mutableStateOf(appSettings.fpsGraphEnabled)
@@ -135,13 +148,9 @@ class TileRepository @Inject constructor(
 
         refreshPlatformStates()
 
-        _tileOrder.clear()
-        _tileOrder.addAll(loadTileOrder())
-        _tiles.clear()
-        _tiles.addAll(
-            _tileOrder.mapNotNull { id ->
-                defaultTiles.find { it.id == id }
-            }
+        applyOrders(
+            gameIds = loadOrder(TileCategory.GAME),
+            systemIds = loadOrder(TileCategory.SYSTEM),
         )
     }
 
@@ -167,17 +176,55 @@ class TileRepository @Inject constructor(
         appSettings.fpsGraphEnabled = enabled
     }
 
-    private fun saveTileOrder() {
-        appSettings.tileOrder = _tileOrder
+    private fun applyOrders(gameIds: List<String>, systemIds: List<String>) {
+        _gameTileOrder.clear()
+        _gameTileOrder.addAll(gameIds)
+        _systemTileOrder.clear()
+        _systemTileOrder.addAll(systemIds)
+        rebuildTiles(TileCategory.GAME)
+        rebuildTiles(TileCategory.SYSTEM)
+        persistOrders()
     }
 
-    private fun loadTileOrder(): List<String> {
-        val savedOrder = appSettings.tileOrder
-        return if (savedOrder.isNotEmpty()) {
-            savedOrder.filter { id -> defaultTiles.any { it.id == id } }
-        } else {
-            defaultTiles.map { it.id }
+    private fun rebuildTiles(category: TileCategory) {
+        val order = when (category) {
+            TileCategory.GAME -> _gameTileOrder
+            TileCategory.SYSTEM -> _systemTileOrder
         }
+        val target = tilesFor(category)
+        target.clear()
+        target.addAll(order.mapNotNull { id -> defaultTiles.find { it.id == id } })
+    }
+
+    private fun persistOrders() {
+        appSettings.tileOrderGame = _gameTileOrder.toList()
+        appSettings.tileOrderSystem = _systemTileOrder.toList()
+    }
+
+    private fun loadOrder(category: TileCategory): List<String> {
+        val catalogIds = defaultTiles
+            .filter { TileCategories.categoryOf(it.id) == category }
+            .map { it.id }
+            .toSet()
+
+        val saved = when (category) {
+            TileCategory.GAME -> appSettings.tileOrderGame
+            TileCategory.SYSTEM -> appSettings.tileOrderSystem
+        }.filter { it in catalogIds }
+
+        if (saved.isNotEmpty()) return saved
+
+        // Migrate tu tile_order cu (mot list chung).
+        val legacy = appSettings.tileOrder.filter {
+            TileCategories.categoryOf(it) == category && it in catalogIds
+        }
+        if (legacy.isNotEmpty()) return legacy
+
+        val defaults = when (category) {
+            TileCategory.GAME -> TileCategories.DEFAULT_GAME_ORDER
+            TileCategory.SYSTEM -> TileCategories.DEFAULT_SYSTEM_ORDER
+        }
+        return defaults.filter { it in catalogIds }
     }
 
     private fun clearBackgroundProcesses() {
@@ -194,14 +241,29 @@ class TileRepository @Inject constructor(
             Toast.makeText(context, context.getString(R.string.game_memory_boosted), Toast.LENGTH_SHORT).show()
     }
 
+    fun updateTileSelection(category: TileCategory, selectedIds: List<String>) {
+        val catalogIds = defaultTiles
+            .filter { TileCategories.categoryOf(it.id) == category }
+            .map { it.id }
+            .toSet()
+        val filtered = selectedIds.filter { it in catalogIds }
+        when (category) {
+            TileCategory.GAME -> {
+                _gameTileOrder.clear()
+                _gameTileOrder.addAll(filtered)
+            }
+            TileCategory.SYSTEM -> {
+                _systemTileOrder.clear()
+                _systemTileOrder.addAll(filtered)
+            }
+        }
+        rebuildTiles(category)
+        persistOrders()
+    }
+
+    /** @deprecated Use [updateTileSelection] with [TileCategory]. */
     fun updateTileSelection(selectedIds: List<String>) {
-        _tiles.clear()
-        _tiles.addAll(selectedIds.mapNotNull { id ->
-            defaultTiles.find { it.id == id }
-        })
-        _tileOrder.clear()
-        _tileOrder.addAll(selectedIds)
-        saveTileOrder()
+        updateTileSelection(TileCategory.GAME, selectedIds)
     }
 
     private fun platformTile(feature: String, iconRes: Int, fallbackLabel: String): PlatformTile {

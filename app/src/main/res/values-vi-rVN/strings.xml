@@ -83,6 +83,10 @@
     <!-- Game Panel -->
     <string name="save">Lưu</string>
     <string name="panel_options">Tùy chọn bảng</string>
+    <string name="panel_tab_game">Game</string>
+    <string name="panel_tab_system">Hệ thống</string>
+    <string name="panel_system_hint">Bật/tắt hệ thống nhanh khi chơi</string>
+    <string name="panel_no_tiles">Chưa có ô — nhấn chỉnh sửa để thêm</string>
     <string name="brightness_slider">Thanh trượt độ sáng</string>
     <string name="fps_graph">Đồ thị FPS</string>
     <string name="selected_tiles">Ô đã chọn</string>
