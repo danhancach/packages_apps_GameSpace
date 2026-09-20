@@ -125,6 +125,22 @@
             android:summary="@string/auto_high_touch_summary"
             android:defaultValue="false" />
 
+        <ListPreference
+            android:key="gamespace_bar_theme"
+            android:title="@string/gamebar_theme_title"
+            android:summary="%s"
+            android:entries="@array/gamebar_theme_entries"
+            android:entryValues="@array/gamebar_theme_values"
+            android:defaultValue="system" />
+
+        <com.crdroid.settings.preferences.CustomSeekBarPreference
+            android:key="gamespace_menu_opacity"
+            android:title="@string/gamespace_menu_opacity_title"
+            android:defaultValue="100"
+            android:max="100"
+            app:min="35"
+            app:units="%" />
+
         <com.crdroid.settings.preferences.CustomSeekBarPreference
             android:key="gamespace_icon_idle_alpha"
             android:title="@string/icon_idle_opacity_title"

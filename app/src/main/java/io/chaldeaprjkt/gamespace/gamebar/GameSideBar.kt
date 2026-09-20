@@ -142,16 +142,18 @@ class GameSidebar(
                         CompositionLocalProvider(
                             LocalOnBackPressedDispatcherOwner provides noOpBackDispatcherOwner,
                         ) {
+                            val uiAlpha = gameBarUiAlpha(appSettings.menuOpacity)
                             MaterialExpressiveTheme(
-                            colorScheme = dynamicDarkColorScheme(context),
-                            motionScheme = MotionScheme.expressive(),
-                        ) {
+                                colorScheme = rememberGameBarColorScheme(appSettings.gameBarTheme),
+                                motionScheme = MotionScheme.expressive(),
+                            ) {
                             GameBarView(
                                 showFps = showFpsState.value,
                                 fpsText = fpsTextState.value,
                                 isLocked = isLockedState.value,
                                 isIdle = isIdleState.value,
                                 idleAlpha = (appSettings.iconIdleAlpha / 100f).coerceAtLeast(0.05f),
+                                uiAlpha = uiAlpha,
                                 dockedOnLeft = dockedOnLeftState.value,
                                 mapperEnabled = BuildFlags.MAPPER_ENABLED,
                                 onShowPanel = { handler.post { showPanel() } },
@@ -342,7 +344,7 @@ class GameSidebar(
                     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
                     setContent {
                         MaterialExpressiveTheme(
-                            colorScheme = dynamicDarkColorScheme(context),
+                            colorScheme = rememberGameBarColorScheme(appSettings.gameBarTheme),
                             motionScheme = MotionScheme.expressive(),
                         ) {
                             PanelContent()
@@ -451,6 +453,7 @@ class GameSidebar(
                     systemSettings = settings,
                     tileRepository = tileRepository,
                     maxHeight = panelMaxHeight,
+                    menuOpacity = appSettings.menuOpacity,
                 )
             }
         }

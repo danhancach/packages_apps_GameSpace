@@ -56,4 +56,15 @@
         <item>@string/game_mode_performance</item>
         <item>@string/game_mode_battery</item>
     </string-array>
+
+    <string-array name="gamebar_theme_entries">
+        <item>@string/gamebar_theme_system</item>
+        <item>@string/gamebar_theme_light</item>
+        <item>@string/gamebar_theme_dark</item>
+    </string-array>
+    <string-array name="gamebar_theme_values">
+        <item>system</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
 </resources>
