@@ -15,13 +15,20 @@
  */
 package io.chaldeaprjkt.gamespace.gamebar
 
+import android.content.Context
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import io.chaldeaprjkt.gamespace.data.AppSettings
 
-/** Bo goc / mau dung chung GameBar — Material Expressive, khong hardcode #1A1A1A. */
+/** Bo goc / mau dung chung GameBar — Material Expressive. */
 object GameBarDimens {
     val PanelCorner = 28.dp
     val SectionCorner = 20.dp
@@ -31,13 +38,56 @@ object GameBarDimens {
     val TileIconSize = 52.dp
 }
 
+/**
+ * ColorScheme theo [AppSettings.gameBarTheme]:
+ * system = theo he thong; light / dark = ep.
+ */
 @Composable
-fun gameBarPillContainer(): Color =
-    MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.94f)
+fun rememberGameBarColorScheme(
+    themeMode: String = AppSettings.THEME_SYSTEM,
+): ColorScheme {
+    val context = LocalContext.current
+    val systemDark = isSystemInDarkTheme()
+    val useDark = when (themeMode) {
+        AppSettings.THEME_LIGHT -> false
+        AppSettings.THEME_DARK -> true
+        else -> systemDark
+    }
+    return if (useDark) {
+        dynamicDarkColorScheme(context)
+    } else {
+        dynamicLightColorScheme(context)
+    }
+}
+
+fun resolveGameBarColorScheme(
+    context: Context,
+    themeMode: String,
+    systemDark: Boolean,
+): ColorScheme {
+    val useDark = when (themeMode) {
+        AppSettings.THEME_LIGHT -> false
+        AppSettings.THEME_DARK -> true
+        else -> systemDark
+    }
+    return if (useDark) {
+        dynamicDarkColorScheme(context)
+    } else {
+        dynamicLightColorScheme(context)
+    }
+}
 
 @Composable
-fun gameBarPillBorder(): Color =
-    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
+fun gameBarUiAlpha(menuOpacityPercent: Int): Float =
+    (menuOpacityPercent / 100f).coerceIn(0.35f, 1f)
+
+@Composable
+fun gameBarPillContainer(uiAlpha: Float = 1f): Color =
+    MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.94f * uiAlpha)
+
+@Composable
+fun gameBarPillBorder(uiAlpha: Float = 1f): Color =
+    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f * uiAlpha)
 
 @Composable
 fun gameBarPillContent(): Color =

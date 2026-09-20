@@ -67,6 +67,11 @@ class AppSettings @Inject constructor(private val context: Context) {
         get() = db.getInt(KEY_MENU_OPACITY, 100)
         set(value) = db.edit().putInt(KEY_MENU_OPACITY, value).apply()
 
+    /** GameBar theme: system | light | dark */
+    var gameBarTheme: String
+        get() = db.getString(KEY_GAME_BAR_THEME, THEME_SYSTEM) ?: THEME_SYSTEM
+        set(value) = db.edit().putString(KEY_GAME_BAR_THEME, value).apply()
+
     var tileOrder: List<String>
         get() = db.getString(KEY_TILE_ORDER, null)?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
         set(value) = db.edit().putString(KEY_TILE_ORDER, value.joinToString(",")).apply()
@@ -138,6 +143,10 @@ class AppSettings @Inject constructor(private val context: Context) {
         const val KEY_RINGER_MODE = "gamespace_ringer_mode"
         const val KEY_LOCK_GESTURE = "gamespace_lock_gesture"
         const val KEY_MENU_OPACITY = "gamespace_menu_opacity"
+        const val KEY_GAME_BAR_THEME = "gamespace_bar_theme"
+        const val THEME_SYSTEM = "system"
+        const val THEME_LIGHT = "light"
+        const val THEME_DARK = "dark"
         const val KEY_TILE_ORDER = "tile_order"
         const val KEY_TILE_ORDER_GAME = "tile_order_game"
         const val KEY_TILE_ORDER_SYSTEM = "tile_order_system"

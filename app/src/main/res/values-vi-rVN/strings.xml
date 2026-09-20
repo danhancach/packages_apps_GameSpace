@@ -56,7 +56,13 @@
     <string name="danmaku_notification_mode_title">Chế độ thông báo hiện đại</string>
     <string name="danmaku_notification_mode_summary">Hiển thị thông báo hiện đại hay còn gọi là nhận xét về dấu đầu dòng khi trò chơi đang hoạt động</string>
     <!-- Gamespace opacity -->
-    <string name="gamespace_menu_opacity_title">Độ mờ bảng điều khiển nổi</string>
+    <string name="gamespace_menu_opacity_title">Độ trong suốt UI GameBar</string>
+    <string name="gamebar_theme_title">Giao diện GameBar</string>
+    <string name="gamebar_theme_system">Theo hệ thống</string>
+    <string name="gamebar_theme_light">Sáng</string>
+    <string name="gamebar_theme_dark">Tối</string>
+    <string name="tile_hspc">H.S. Power</string>
+    <string name="tile_high_touch">Chạm nhanh</string>
     <!-- Bypass charging -->
     <string name="bypass_charge_enabled_title">Bỏ qua sạc</string>
     <string name="bypass_charge_enabled_summary">Bật chế độ ngắt sạc khi đang chơi</string>

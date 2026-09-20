@@ -69,7 +69,13 @@
     <string name="danmaku_notification_mode_summary">Show notification as danmaku aka bullet comments while game is active</string>
 
     <!-- Gamespace opacity -->
-    <string name="gamespace_menu_opacity_title">Overlay menu opacity level</string>
+    <string name="gamespace_menu_opacity_title">GameBar UI opacity</string>
+    <string name="gamebar_theme_title">GameBar theme</string>
+    <string name="gamebar_theme_system">Follow system</string>
+    <string name="gamebar_theme_light">Light</string>
+    <string name="gamebar_theme_dark">Dark</string>
+    <string name="tile_hspc">H.S. Power</string>
+    <string name="tile_high_touch">High touch</string>
 
     <!-- Bypass charging -->
     <string name="bypass_charge_enabled_title">Bypass charging</string>

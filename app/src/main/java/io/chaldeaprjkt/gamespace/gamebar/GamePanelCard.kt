@@ -98,9 +98,11 @@ fun GamePanelCard(
     systemSettings: SystemSettings,
     tileRepository: TileRepository,
     maxHeight: Dp = Dp.Unspecified,
+    menuOpacity: Int = 100,
 ) {
 
     val panelWidth = GameBarDimens.PanelWidth
+    val uiAlpha = gameBarUiAlpha(menuOpacity)
 
     val initialMode = remember {
         fromSystemGameMode(gameModeUtils.activeGame?.mode ?: GameManager.GAME_MODE_STANDARD)
@@ -112,6 +114,7 @@ fun GamePanelCard(
 
     Card(
         modifier = Modifier
+            .graphicsLayer { alpha = uiAlpha }
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,

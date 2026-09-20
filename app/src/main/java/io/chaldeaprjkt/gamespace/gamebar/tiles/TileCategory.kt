@@ -32,6 +32,8 @@ object TileCategories {
         "fps_info",
         "boost_memory",
         "touch_boost",
+        "hspc",
+        "high_touch",
         "screen_record",
         "screenshot",
         "caffeine",
@@ -40,6 +42,8 @@ object TileCategories {
     /** Thu tu mac dinh hien tren tab Game (chi id ton tai moi dung). */
     val DEFAULT_GAME_ORDER = listOf(
         "fps_info",
+        "hspc",
+        "high_touch",
         "boost_memory",
         "notification",
         "stay_awake",

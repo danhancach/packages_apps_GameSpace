@@ -80,6 +80,7 @@ fun GameBarView(
     isLocked: Boolean,
     isIdle: Boolean,
     idleAlpha: Float,
+    uiAlpha: Float = 1f,
     dockedOnLeft: Boolean,
     mapperEnabled: Boolean,
     onShowPanel: () -> Unit,
@@ -182,6 +183,7 @@ fun GameBarView(
                     showFps = showFps,
                     fpsText = fpsText,
                     idleAlpha = animatedPillAlpha,
+                    uiAlpha = uiAlpha,
                     pointerModifier = pointerModifier,
                     onTap = {
                         state.setTargetScene(GameBarScenes.VerticalPill, scope)
@@ -196,6 +198,7 @@ fun GameBarView(
                     mapperEnabled = mapperEnabled,
                     dockedOnLeft = dockedOnLeft,
                     showFps = showFps,
+                    uiAlpha = uiAlpha,
                     onToggleFps = onToggleFps,
                     onShowPanel = onShowPanel,
                     onToggleLock = onToggleLock,
@@ -242,12 +245,13 @@ private fun PillTab(
     showFps: Boolean,
     fpsText: String,
     idleAlpha: Float,
+    uiAlpha: Float,
     pointerModifier: Modifier,
     onTap: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val container = gameBarPillContainer()
-    val border = gameBarPillBorder()
+    val container = gameBarPillContainer(uiAlpha)
+    val border = gameBarPillBorder(uiAlpha)
     val content = gameBarPillContent()
 
     if (showFps) {
@@ -312,6 +316,7 @@ private fun VerticalPill(
     mapperEnabled: Boolean,
     dockedOnLeft: Boolean,
     showFps: Boolean,
+    uiAlpha: Float,
     onToggleFps: () -> Unit,
     onShowPanel: () -> Unit,
     onToggleLock: () -> Unit,
@@ -319,8 +324,8 @@ private fun VerticalPill(
     modifier: Modifier = Modifier,
 ) {
     val pillShape = RoundedCornerShape((PILL_WIDTH_DP / 2).dp)
-    val container = gameBarPillContainer()
-    val border = gameBarPillBorder()
+    val container = gameBarPillContainer(uiAlpha)
+    val border = gameBarPillBorder(uiAlpha)
     val content = gameBarPillContent()
     Column(
         modifier = modifier

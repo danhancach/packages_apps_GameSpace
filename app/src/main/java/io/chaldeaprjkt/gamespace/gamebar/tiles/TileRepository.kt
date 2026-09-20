@@ -58,6 +58,10 @@ class ToggleableTile(
         state.value = !state.value
         setter(state.value)
     }
+
+    fun forceState(value: Boolean) {
+        state.value = value
+    }
 }
 
 class FixedActionTile(
@@ -160,6 +164,13 @@ class TileRepository @Inject constructor(
             val state = platform.getState(tile.id)
             if (!state.isEmpty) tile.updateFromState(state)
         }
+        // Dong bo tile HSPC / high-touch voi Settings he thong.
+        defaultTiles.filterIsInstance<ToggleableTile>().forEach { tile ->
+            when (tile.id) {
+                "hspc" -> tile.forceState(systemSettings.hspcEnabled)
+                "high_touch" -> tile.forceState(systemSettings.highTouchPollingEnabled)
+            }
+        }
     }
 
     fun dispose() {
@@ -212,7 +223,19 @@ class TileRepository @Inject constructor(
             TileCategory.SYSTEM -> appSettings.tileOrderSystem
         }.filter { it in catalogIds }
 
-        if (saved.isNotEmpty()) return saved
+        if (saved.isNotEmpty()) {
+            if (category == TileCategory.GAME) {
+                // Chen HSPC / high_touch neu thiet bi ho tro ma user chua co trong list.
+                val autoAdd = listOf("hspc", "high_touch").filter {
+                    it in catalogIds && it !in saved
+                }
+                if (autoAdd.isNotEmpty()) {
+                    val insertAt = (saved.indexOf("fps_info") + 1).coerceAtLeast(0)
+                    return saved.toMutableList().apply { addAll(insertAt, autoAdd) }
+                }
+            }
+            return saved
+        }
 
         // Migrate tu tile_order cu (mot list chung).
         val legacy = appSettings.tileOrder.filter {
@@ -504,6 +527,38 @@ class TileRepository @Inject constructor(
             )
         )
 
+        if (isHspcAvailable()) {
+            val hspcState = mutableStateOf(systemSettings.hspcEnabled)
+            add(
+                ToggleableTile(
+                    id = "hspc",
+                    label = context.getString(R.string.tile_hspc),
+                    icon = R.drawable.materialsymbols_ic_battery_charging_full_rounded_filled,
+                    state = hspcState,
+                    setter = {
+                        systemSettings.hspcEnabled = it
+                        hspcState.value = it
+                    }
+                )
+            )
+        }
+
+        if (isHighTouchAvailable()) {
+            val highTouchState = mutableStateOf(systemSettings.highTouchPollingEnabled)
+            add(
+                ToggleableTile(
+                    id = "high_touch",
+                    label = context.getString(R.string.tile_high_touch),
+                    icon = R.drawable.materialsymbols_ic_touch_app_rounded_filled,
+                    state = highTouchState,
+                    setter = {
+                        systemSettings.highTouchPollingEnabled = it
+                        highTouchState.value = it
+                    }
+                )
+            )
+        }
+
         add(
             FixedActionTile(
                 id = "settings",
@@ -537,4 +592,27 @@ class TileRepository @Inject constructor(
             )
         }
     }
+
+    private fun isHspcAvailable(): Boolean =
+        try {
+            context.packageManager.getPackageInfo(SystemSettings.HSPC_PACKAGE, 0)
+            true
+        } catch (_: Throwable) {
+            false
+        }
+
+    private fun isHighTouchAvailable(): Boolean =
+        try {
+            lineageos.hardware.LineageHardwareManager.getInstance(context)
+                .isSupported(
+                    lineageos.hardware.LineageHardwareManager.FEATURE_HIGH_TOUCH_POLLING_RATE
+                )
+        } catch (_: Throwable) {
+            try {
+                context.packageManager.getPackageInfo(SystemSettings.TOUCH_PACKAGE, 0)
+                true
+            } catch (_: Throwable) {
+                false
+            }
+        }
 }
