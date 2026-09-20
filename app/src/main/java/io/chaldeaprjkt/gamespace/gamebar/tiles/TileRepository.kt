@@ -565,7 +565,7 @@ class TileRepository @Inject constructor(
                 label = context.getString(R.string.tile_settings),
                 icon = R.drawable.materialsymbols_ic_settings_rounded_filled,
                 action = {
-                    val intent = Intent(Settings.ACTION_SETTINGS).apply {
+                    val intent = Intent(context, io.chaldeaprjkt.gamespace.settings.SettingsActivity::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     }
                     context.startActivity(intent)

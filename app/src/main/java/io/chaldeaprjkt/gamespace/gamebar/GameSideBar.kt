@@ -36,15 +36,10 @@ import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.ComposeView
@@ -63,6 +58,7 @@ import io.chaldeaprjkt.gamespace.gamebar.fps.*
 import io.chaldeaprjkt.gamespace.gamebar.mapper.MapperController
 import io.chaldeaprjkt.gamespace.gamebar.tiles.*
 import io.chaldeaprjkt.gamespace.utils.*
+import kotlinx.coroutines.delay
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
@@ -116,6 +112,7 @@ class GameSidebar(
     private var pillExpanded = false
     private val pillExpandedState = mutableStateOf(false)
     private val barTopState = mutableIntStateOf(0)
+    private val menuOpacityState = mutableIntStateOf(appSettings.menuOpacity.coerceIn(35, 100))
     private val taskManager by lazy { ActivityTaskManager.getService() }
 
     private val taskFpsCallback = object : TaskFpsCallback() {
@@ -142,7 +139,7 @@ class GameSidebar(
                         CompositionLocalProvider(
                             LocalOnBackPressedDispatcherOwner provides noOpBackDispatcherOwner,
                         ) {
-                            val uiAlpha = gameBarUiAlpha(appSettings.menuOpacity)
+                            val uiAlpha = gameBarUiAlpha(menuOpacityState.intValue)
                             MaterialExpressiveTheme(
                                 colorScheme = rememberGameBarColorScheme(appSettings.gameBarTheme),
                                 motionScheme = MotionScheme.expressive(),
@@ -156,7 +153,12 @@ class GameSidebar(
                                 uiAlpha = uiAlpha,
                                 dockedOnLeft = dockedOnLeftState.value,
                                 mapperEnabled = BuildFlags.MAPPER_ENABLED,
-                                onShowPanel = { handler.post { showPanel() } },
+                                onShowPanel = {
+                                    handler.post {
+                                        if (panelShowing) requestDismissPanel()
+                                        else showPanel()
+                                    }
+                                },
                                 onMapControls = { handler.post { enterMapperEdit() } },
                                 onToggleLock = {
                                     setGestureLock(!isLockedState.value)
@@ -279,6 +281,17 @@ class GameSidebar(
         fpsInteractor.start()
         brightnessInteractor.start()
 
+        // Wrap-content + NOT_TOUCH_MODAL: cham ngoai panel di qua game, khong can dong panel.
+        panelLayoutParam.gravity = Gravity.TOP or (if (circleOnLeft) Gravity.START else Gravity.END)
+        panelLayoutParam.x = 0
+        val density = context.resources.displayMetrics.density
+        val maxPanelPx = (520 * density).toInt()
+        val preferredY = gameBarLayoutParam.y.coerceIn(safeArea, safeHeight)
+        panelLayoutParam.y = preferredY.coerceAtMost((safeHeight - maxPanelPx).coerceAtLeast(safeArea))
+        panelLayoutParam.width = WindowManager.LayoutParams.WRAP_CONTENT
+        panelLayoutParam.height = WindowManager.LayoutParams.WRAP_CONTENT
+
+        menuOpacityState.intValue = appSettings.menuOpacity.coerceIn(35, 100)
         val pv = createPanelView()
         panelView = pv
 
@@ -287,7 +300,8 @@ class GameSidebar(
             Process.setThreadGroupAndCpuset(Process.myTid(), Process.THREAD_GROUP_SYSTEM)
             Process.setProcessGroup(Process.myPid(), Process.THREAD_GROUP_SYSTEM)
             wm.addView(pv, panelLayoutParam)
-            gameBarView.visibility = View.GONE
+            // Thu ve notch (STL Pill) — khong de VerticalPill WRAP_CONTENT (khoi chu nhat mo).
+            collapseRequestState.intValue = collapseRequestState.intValue + 1
         } catch (_: Exception) {
             brightnessInteractor.dispose()
             fpsInteractor.dispose()
@@ -318,6 +332,8 @@ class GameSidebar(
 
         if (!shouldClose) {
             gameBarView.visibility = View.VISIBLE
+            // Dam bao ve scene notch truoc khi idle (VerticalPill khong dung idleAlpha).
+            collapseRequestState.intValue = collapseRequestState.intValue + 1
             scheduleIdle()
         }
     }
@@ -339,6 +355,7 @@ class GameSidebar(
 
     private fun createPanelView(): ComposeView {
         return ComposeView(context).apply {
+            setBackgroundColor(android.graphics.Color.TRANSPARENT)
             repeatWhenAttached {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -365,6 +382,14 @@ class GameSidebar(
 
         val show = entered && !dismissing
         val slideSign = if (circleOnLeft) -1f else 1f
+
+        LaunchedEffect(dismissing) {
+            if (dismissing) {
+                // Backup neu finishedListener khong chay (van goi remove + scheduleIdle).
+                delay(280)
+                handler.post { removePanelAndRestoreCircle() }
+            }
+        }
 
         val slideOffset by animateFloatAsState(
             targetValue = if (show) 0f else slideSign * 400f,
@@ -406,56 +431,39 @@ class GameSidebar(
         val spaceAbove = (barTopDp - navBottomDp - 16.dp).coerceAtLeast(0.dp)
         val bottomAligned = spaceBelow < 240.dp && spaceAbove > spaceBelow
         val panelMaxHeight = (if (bottomAligned) spaceAbove else spaceBelow).coerceIn(240.dp, 520.dp)
-        val alignment = when {
-            bottomAligned && circleOnLeft -> Alignment.BottomStart
-            bottomAligned && !circleOnLeft -> Alignment.BottomEnd
-            !bottomAligned && circleOnLeft -> Alignment.TopStart
-            else -> Alignment.TopEnd
-        }
         val transformOriginX = if (circleOnLeft) 0f else 1f
         val transformOriginY = if (bottomAligned) 1f else 0f
 
+        var menuOpacity by remember {
+            mutableIntStateOf(menuOpacityState.intValue)
+        }
+
+        // Chi wrap panel — khong fill man hinh (de NOT_TOUCH_MODAL cho game nhan cham ngoai).
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                ) { if (!dismissing) requestDismissPanel() },
-            contentAlignment = alignment,
+            modifier = Modifier.graphicsLayer {
+                translationX = slideOffset
+                alpha = panelAlpha
+                scaleX = panelScale
+                scaleY = panelScale
+                transformOrigin = TransformOrigin(transformOriginX, transformOriginY)
+            },
         ) {
-            val edgePadding = if (bottomAligned) navBottomDp + 8.dp else barTopDp
-            Box(
-                modifier = Modifier
-                    .padding(
-                        start = 12.dp,
-                        end = 12.dp,
-                        top = if (!bottomAligned) edgePadding else 0.dp,
-                        bottom = if (bottomAligned) edgePadding else 0.dp,
-                    )
-                    .graphicsLayer {
-                        translationX = slideOffset
-                        alpha = panelAlpha
-                        scaleX = panelScale
-                        scaleY = panelScale
-                        transformOrigin = TransformOrigin(transformOriginX, transformOriginY)
-                    }
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                    ) {}
-            ) {
-                GamePanelCard(
-                    interactor = brightnessInteractor,
-                    fpsInteractor = fpsInteractor,
-                    apps = apps,
-                    gameModeUtils = gameModeUtils,
-                    systemSettings = settings,
-                    tileRepository = tileRepository,
-                    maxHeight = panelMaxHeight,
-                    menuOpacity = appSettings.menuOpacity,
-                )
-            }
+            GamePanelCard(
+                interactor = brightnessInteractor,
+                fpsInteractor = fpsInteractor,
+                apps = apps,
+                gameModeUtils = gameModeUtils,
+                systemSettings = settings,
+                tileRepository = tileRepository,
+                maxHeight = panelMaxHeight,
+                menuOpacity = menuOpacity,
+                onMenuOpacityChange = { value ->
+                    menuOpacity = value
+                    menuOpacityState.intValue = value
+                    appSettings.menuOpacity = value
+                },
+                onClose = { if (!dismissing) requestDismissPanel() },
+            )
         }
     }
 
@@ -586,13 +594,15 @@ class GameSidebar(
     private fun createPanelLayoutParam() = WindowManager.LayoutParams(
         WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
             WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
         PixelFormat.TRANSLUCENT
     ).apply {
-        width = WindowManager.LayoutParams.MATCH_PARENT
-        height = WindowManager.LayoutParams.MATCH_PARENT
+        width = WindowManager.LayoutParams.WRAP_CONTENT
+        height = WindowManager.LayoutParams.WRAP_CONTENT
         layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
         preferMinimalPostProcessing = true
+        gravity = Gravity.TOP or Gravity.END
     }
 
     companion object {

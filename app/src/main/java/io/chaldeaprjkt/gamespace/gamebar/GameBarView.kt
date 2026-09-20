@@ -233,7 +233,17 @@ fun GameBarView(
             }
         }
     } else {
-        sceneContent()
+        // Gioi han kich thuoc notch — STL khong de lai khung chu nhat mo quanh tab.
+        val collapsedW = if (showFps) FPS_CIRCLE_SIZE_DP.dp else NOTCH_TOUCH_WIDTH_DP.dp
+        val collapsedH = if (showFps) FPS_CIRCLE_SIZE_DP.dp else NOTCH_HEIGHT_DP.dp
+        Box(
+            modifier = Modifier
+                .width(collapsedW)
+                .height(collapsedH),
+            contentAlignment = if (dockedOnLeft) Alignment.CenterStart else Alignment.CenterEnd,
+        ) {
+            sceneContent()
+        }
     }
 }
 

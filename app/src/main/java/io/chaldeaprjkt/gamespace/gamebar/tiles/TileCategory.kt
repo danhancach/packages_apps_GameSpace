@@ -37,6 +37,7 @@ object TileCategories {
         "screen_record",
         "screenshot",
         "caffeine",
+        "settings",
     )
 
     /** Thu tu mac dinh hien tren tab Game (chi id ton tai moi dung). */
@@ -51,6 +52,7 @@ object TileCategories {
         "screenshot",
         "screen_record",
         "caffeine",
+        "settings",
     )
 
     /** Thu tu mac dinh hien tren tab System — it tile, mot trang. */

@@ -45,6 +45,7 @@ import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.EnergySavingsLeaf
 import androidx.compose.material.icons.filled.SportsEsports
@@ -74,10 +75,10 @@ import io.chaldeaprjkt.gamespace.data.SystemSettings
 import io.chaldeaprjkt.gamespace.gamebar.brightness.*
 import io.chaldeaprjkt.gamespace.gamebar.fps.*
 import io.chaldeaprjkt.gamespace.gamebar.tiles.*
-import io.chaldeaprjkt.gamespace.settings.SettingsActivity
 import io.chaldeaprjkt.gamespace.utils.GameModeUtils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlin.math.roundToInt
 import kotlin.math.*
 import java.text.SimpleDateFormat
 import java.time.LocalTime
@@ -99,6 +100,8 @@ fun GamePanelCard(
     tileRepository: TileRepository,
     maxHeight: Dp = Dp.Unspecified,
     menuOpacity: Int = 100,
+    onMenuOpacityChange: ((Int) -> Unit)? = null,
+    onClose: (() -> Unit)? = null,
 ) {
 
     val panelWidth = GameBarDimens.PanelWidth
@@ -112,7 +115,8 @@ fun GamePanelCard(
 
     val time = rememberCurrentTime()
 
-    Card(
+    // Khong dung Card elevation — bong elevation tao khung chu nhat lo o 4 goc bo tron.
+    Surface(
         modifier = Modifier
             .graphicsLayer { alpha = uiAlpha }
             .clickable(
@@ -121,11 +125,15 @@ fun GamePanelCard(
                 onClick = {}
             )
             .width(panelWidth)
-            .wrapContentHeight(),
+            .wrapContentHeight()
+            .clip(GameBarPanelShape),
         shape = GameBarPanelShape,
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
         ),
     ) {
         GamePanelContent(
@@ -142,6 +150,9 @@ fun GamePanelCard(
             time = time,
             tileRepository = tileRepository,
             maxHeight = maxHeight,
+            menuOpacity = menuOpacity,
+            onMenuOpacityChange = onMenuOpacityChange,
+            onClose = onClose,
         )
     }
 }
@@ -158,6 +169,9 @@ fun GamePanelContent(
     time: String,
     tileRepository: TileRepository,
     maxHeight: Dp = Dp.Unspecified,
+    menuOpacity: Int = 100,
+    onMenuOpacityChange: ((Int) -> Unit)? = null,
+    onClose: (() -> Unit)? = null,
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var panelTab by remember { mutableStateOf(TileCategory.GAME) }
@@ -180,6 +194,7 @@ fun GamePanelContent(
             PanelCategoryTabs(
                 selected = panelTab,
                 onSelected = { panelTab = it },
+                onClose = onClose,
             )
 
             when (panelTab) {
@@ -195,6 +210,13 @@ fun GamePanelContent(
                         onEditClick = { isEditing = true },
                         tileRepository = tileRepository
                     )
+
+                    if (onMenuOpacityChange != null) {
+                        MenuOpacityRow(
+                            opacity = menuOpacity,
+                            onOpacityChange = onMenuOpacityChange,
+                        )
+                    }
 
                     if (apps.isNotEmpty()) {
                         QuickStartAppSidebar(apps = apps)
@@ -233,28 +255,84 @@ fun GamePanelContent(
 private fun PanelCategoryTabs(
     selected: TileCategory,
     onSelected: (TileCategory) -> Unit,
+    onClose: (() -> Unit)? = null,
 ) {
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        TileCategory.entries.forEachIndexed { index, category ->
-            SegmentedButton(
-                selected = selected == category,
-                onClick = { onSelected(category) },
-                shape = SegmentedButtonDefaults.itemShape(
-                    index = index,
-                    count = TileCategory.entries.size,
-                ),
-                label = {
-                    Text(
-                        text = stringResource(
-                            when (category) {
-                                TileCategory.GAME -> R.string.panel_tab_game
-                                TileCategory.SYSTEM -> R.string.panel_tab_system
-                            }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.weight(1f)) {
+            TileCategory.entries.forEachIndexed { index, category ->
+                SegmentedButton(
+                    selected = selected == category,
+                    onClick = { onSelected(category) },
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = TileCategory.entries.size,
+                    ),
+                    label = {
+                        Text(
+                            text = stringResource(
+                                when (category) {
+                                    TileCategory.GAME -> R.string.panel_tab_game
+                                    TileCategory.SYSTEM -> R.string.panel_tab_system
+                                }
+                            )
                         )
-                    )
-                },
+                    },
+                )
+            }
+        }
+        if (onClose != null) {
+            IconButton(onClick = onClose) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = stringResource(R.string.cancel),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MenuOpacityRow(
+    opacity: Int,
+    onOpacityChange: (Int) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shape = GameBarSectionShape,
+            )
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.gamespace_menu_opacity_title),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = "$opacity%",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        Slider(
+            value = opacity.toFloat(),
+            onValueChange = { onOpacityChange(it.roundToInt().coerceIn(35, 100)) },
+            valueRange = 35f..100f,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
