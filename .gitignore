@@ -13,4 +13,19 @@ local.properties
 /magisk*
 /prebuilts
 /SettingsLib
+/system_libs
+/.gradle-sdk
 /gradlew.bat
+/app/build
+/.gradle
+
+# IDE / AI tooling
+.cursor/
+.vscode/
+.codex/
+.claude/
+.gitnexus/
+
+# Tai lieu / patch noi bo
+.doc/
+.patch/
