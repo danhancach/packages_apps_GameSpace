@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fallback khi Compose nav chua do xong chieu cao. -->
+    <dimen name="gamespace_bottom_nav_content_padding">100dp</dimen>
+</resources>

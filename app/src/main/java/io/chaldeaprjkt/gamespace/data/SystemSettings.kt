@@ -160,5 +160,37 @@ class SystemSettings @Inject constructor(
             )
         }
 
+    /**
+     * H.S. Power Control (XperiaCharger). Chi ghi Settings.Global;
+     * BatteryMonitorService se ap dung sysfs.
+     */
+    var hspcEnabled
+        get() = Settings.Global.getInt(resolver, HSPC_GLOBAL_KEY, 0) > 0
+        set(value) {
+            Settings.Global.putInt(resolver, HSPC_GLOBAL_KEY, if (value) 1 else 0)
+        }
+
+    /**
+     * High touch polling rate. Ghi LineageSettings;
+     * HighTouchPollingService / LineageHardware se ap dung.
+     */
+    var highTouchPollingEnabled
+        get() = LineageSettings.System.getIntForUser(
+            resolver, LineageSettings.System.HIGH_TOUCH_POLLING_RATE_ENABLE, 0,
+            UserHandle.USER_CURRENT
+        ) == 1
+        set(value) {
+            LineageSettings.System.putIntForUser(
+                resolver, LineageSettings.System.HIGH_TOUCH_POLLING_RATE_ENABLE,
+                if (value) 1 else 0, UserHandle.USER_CURRENT
+            )
+        }
+
     private fun Boolean.toInt() = if (this) 1 else 0
+
+    companion object {
+        const val HSPC_GLOBAL_KEY = "device_charging_enable"
+        const val HSPC_PACKAGE = "com.xperia.settings.charger"
+        const val TOUCH_PACKAGE = "com.xperia.settings.touch"
+    }
 }

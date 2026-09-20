@@ -23,6 +23,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.chaldeaprjkt.gamespace.data.AppSettings
+import io.chaldeaprjkt.gamespace.data.GameIconVault
 import io.chaldeaprjkt.gamespace.data.GameSession
 import io.chaldeaprjkt.gamespace.data.SystemSettings
 import io.chaldeaprjkt.gamespace.gamebar.brightness.*
@@ -55,6 +56,14 @@ object MainModule {
     @Singleton
     fun provideSystemSettings(@ApplicationContext context: Context, gameModeUtils: GameModeUtils) =
         SystemSettings(context, gameModeUtils)
+
+    @Provides
+    @Singleton
+    fun provideGameIconVault(
+        @ApplicationContext context: Context,
+        appSettings: AppSettings,
+        systemSettings: SystemSettings,
+    ) = GameIconVault(context, appSettings, systemSettings)
 
     @Provides
     @Singleton

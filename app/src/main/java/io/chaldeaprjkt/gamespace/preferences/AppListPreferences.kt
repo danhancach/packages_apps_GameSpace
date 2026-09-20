@@ -29,7 +29,6 @@ import androidx.activity.result.ActivityResult
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceViewHolder
-import androidx.preference.SwitchPreferenceCompat
 
 import io.chaldeaprjkt.gamespace.R
 import io.chaldeaprjkt.gamespace.data.GameConfig
@@ -53,6 +52,10 @@ class AppListPreferences @JvmOverloads constructor(context: Context, attrs: Attr
         context.entryPointOf<ServiceViewEntryPoint>().gameModeUtils()
     }
 
+    private val gameIconVault by lazy {
+        context.entryPointOf<ServiceViewEntryPoint>().gameIconVault()
+    }
+
     private lateinit var registeredAppClickAction: (String) -> Unit
 
     init {
@@ -66,19 +69,6 @@ class AppListPreferences @JvmOverloads constructor(context: Context, attrs: Attr
             setIcon(R.drawable.ic_add)
             isPersistent = false
             onPreferenceClickListener = this@AppListPreferences
-        }
-    }
-
-    private val autoDetectPref by lazy {
-        SwitchPreferenceCompat(context).apply {
-            key = KEY_AUTO_GAME_DETECT
-            title = context.getString(R.string.auto_game_detect_title)
-            summary = context.getString(R.string.auto_game_detect_summary)
-            setDefaultValue(true)
-            setOnPreferenceChangeListener { _, newValue ->
-                    systemSettings.autoGameDetect = newValue as Boolean
-                true
-            }
         }
     }
 
@@ -158,7 +148,6 @@ class AppListPreferences @JvmOverloads constructor(context: Context, attrs: Attr
         systemSettings.userGames?.let { apps.addAll(it) }
 
         removeAll()
-        addPreference(autoDetectPref)
         addPreference(makeAddPref)
 
         apps
@@ -178,6 +167,7 @@ class AppListPreferences @JvmOverloads constructor(context: Context, attrs: Attr
         }
         systemSettings.userGames = apps
         gameModeUtils.setIntervention(packageName, GameConfig.ModeBuilder.build())
+        gameIconVault.onGameRegistered(packageName)
         updateAppList()
     }
 
@@ -191,6 +181,7 @@ class AppListPreferences @JvmOverloads constructor(context: Context, attrs: Attr
         apps.removeIf { it.packageName == packageName }
         systemSettings.userGames = apps
         gameModeUtils.setIntervention(packageName, null)
+        gameIconVault.onGameUnregistered(packageName)
         updateAppList()
     }
 

@@ -3,6 +3,7 @@
      Copyright (C) 2021 Chaldeaprjkt
                    2022-2026 crDroid Android Project
                    2023 risingOS Android Project
+                   2026 danhancach
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -19,10 +20,6 @@
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <com.android.settingslib.widget.IllustrationPreference
-        android:key="game_settings_illustration_video"
-        app:lottie_rawRes="@raw/game_settings_illustration" />
 
     <PreferenceCategory
         android:key="game_optimization"
@@ -116,6 +113,18 @@
             android:summary="@string/bypass_charge_enabled_summary"
             android:defaultValue="false" />
 
+        <SwitchPreferenceCompat
+            android:key="gamespace_auto_hspc"
+            android:title="@string/auto_hspc_title"
+            android:summary="@string/auto_hspc_summary"
+            android:defaultValue="false" />
+
+        <SwitchPreferenceCompat
+            android:key="gamespace_auto_high_touch"
+            android:title="@string/auto_high_touch_title"
+            android:summary="@string/auto_high_touch_summary"
+            android:defaultValue="false" />
+
         <com.crdroid.settings.preferences.CustomSeekBarPreference
             android:key="gamespace_icon_idle_alpha"
             android:title="@string/icon_idle_opacity_title"
@@ -135,9 +144,5 @@
             android:summary="@string/quick_start_apps_summary" />
 
     </PreferenceCategory>
-
-    <io.chaldeaprjkt.gamespace.preferences.AppListPreferences
-        android:key="gamespace_game_list"
-        android:title="@string/game_list_title" />
 
 </PreferenceScreen>

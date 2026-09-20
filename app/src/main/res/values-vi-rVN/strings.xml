@@ -7,12 +7,18 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- Game Space -->
     <string name="settings_title">Không gian trò chơi</string>
+    <string name="tab_library">Thư viện</string>
+    <string name="tab_settings">Cài đặt</string>
     <string name="app_selector_label">Chọn trò chơi của bạn</string>
     <string name="in_game_preferences_title">Tùy chọn trong trò chơi</string>
     <string name="game_list_title">Thư viện</string>
+    <string name="library_options_title">Tùy chọn thư viện</string>
     <string name="app_search_title">Tìm kiếm</string>
     <string name="add_game">Add game</string>
     <string name="launch_game">Launch game</string>
+    <!-- Icon vault (AxSandbox) -->
+    <string name="icon_vault_title">Lưu trữ biểu tượng trò chơi</string>
+    <string name="icon_vault_summary">Ẩn các trò chơi trong thư viện khỏi màn hình chủ và ngăn kéo ứng dụng. Mở chúng từ Không gian trò chơi</string>
     <!-- Quick start apps -->
     <string name="quick_start_apps_title">Mở nhanh ứng dụng</string>
     <string name="quick_start_apps_summary">Chọn ứng dụng để mở nhanh</string>
@@ -54,6 +60,12 @@
     <!-- Bypass charging -->
     <string name="bypass_charge_enabled_title">Bỏ qua sạc</string>
     <string name="bypass_charge_enabled_summary">Bật chế độ ngắt sạc khi đang chơi</string>
+    <!-- H.S. Power Control (Sony XperiaCharger) -->
+    <string name="auto_hspc_title">H.S. Power Control</string>
+    <string name="auto_hspc_summary">Tự động bật H.S. Power Control khi chơi game để giảm nhiệt: lấy điện từ sạc thay vì sạc vào pin</string>
+    <!-- High touch polling rate -->
+    <string name="auto_high_touch_title">Tốc độ phản hồi chạm cao</string>
+    <string name="auto_high_touch_summary">Tự động tăng tốc độ phản hồi chạm khi chơi game</string>
     <!-- Call overlay -->
     <string name="call_overlay_enabled_title">Lớp phủ cuộc gọi</string>
     <string name="call_overlay_enabled_summary">Hiển thị lớp phủ tối giản để trả lời/từ chối cuộc gọi</string>
