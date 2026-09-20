@@ -246,6 +246,10 @@ private fun PillTab(
     onTap: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val container = gameBarPillContainer()
+    val border = gameBarPillBorder()
+    val content = gameBarPillContent()
+
     if (showFps) {
         Box(
             modifier = modifier
@@ -253,14 +257,14 @@ private fun PillTab(
                 .alpha(idleAlpha)
                 .then(pointerModifier)
                 .pointerInput(onTap) { detectTapGestures(onTap = { onTap() }) }
-                .border(0.5.dp, Color.White.copy(alpha = 0.4f), CircleShape)
+                .border(1.dp, border, CircleShape)
                 .clip(CircleShape)
-                .background(Color(0xCC1A1A1A)),
+                .background(container),
             contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = fpsText,
-                color = Color.White,
+                color = content,
                 style = MaterialTheme.typography.labelSmall,
             )
         }
@@ -283,9 +287,9 @@ private fun PillTab(
                     .width(NOTCH_WIDTH_DP.dp)
                     .height(NOTCH_HEIGHT_DP.dp)
                     .alpha(idleAlpha)
-                    .border(0.5.dp, Color.White.copy(alpha = 0.35f), notchShape)
+                    .border(1.dp, border, notchShape)
                     .clip(notchShape)
-                    .background(Color(0xCC1A1A1A)),
+                    .background(container),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -294,7 +298,7 @@ private fun PillTab(
                         else R.drawable.ic_arrow_right
                     ),
                     contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.85f),
+                    tint = content.copy(alpha = 0.9f),
                     modifier = Modifier.size(NOTCH_CHEVRON_SIZE_DP.dp),
                 )
             }
@@ -315,6 +319,9 @@ private fun VerticalPill(
     modifier: Modifier = Modifier,
 ) {
     val pillShape = RoundedCornerShape((PILL_WIDTH_DP / 2).dp)
+    val container = gameBarPillContainer()
+    val border = gameBarPillBorder()
+    val content = gameBarPillContent()
     Column(
         modifier = modifier
             .padding(
@@ -322,7 +329,8 @@ private fun VerticalPill(
                 end = if (dockedOnLeft) 0.dp else 12.dp,
             )
             .width(PILL_WIDTH_DP.dp)
-            .background(color = Color(0xCC1A1A1A), shape = pillShape)
+            .border(1.dp, border, pillShape)
+            .background(color = container, shape = pillShape)
             .clip(pillShape),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -334,7 +342,7 @@ private fun VerticalPill(
             Icon(
                 painter = painterResource(R.drawable.ic_fps),
                 contentDescription = null,
-                tint = if (showFps) MaterialTheme.colorScheme.primary else Color.White,
+                tint = if (showFps) MaterialTheme.colorScheme.primary else content,
                 modifier = Modifier.size(20.dp),
             )
         }
@@ -345,7 +353,7 @@ private fun VerticalPill(
             Icon(
                 painter = painterResource(R.drawable.materialsymbols_ic_dashboard_rounded_filled),
                 contentDescription = null,
-                tint = Color.White,
+                tint = content,
                 modifier = Modifier.size(20.dp),
             )
         }
@@ -359,7 +367,7 @@ private fun VerticalPill(
                     else R.drawable.materialsymbols_ic_lock_open_rounded_filled
                 ),
                 contentDescription = null,
-                tint = if (isLocked) MaterialTheme.colorScheme.primary else Color.White,
+                tint = if (isLocked) MaterialTheme.colorScheme.primary else content,
                 modifier = Modifier.size(20.dp),
             )
         }
@@ -371,7 +379,7 @@ private fun VerticalPill(
                 Icon(
                     painter = painterResource(R.drawable.materialsymbols_ic_sports_esports_rounded_filled),
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = content,
                     modifier = Modifier.size(20.dp),
                 )
             }
