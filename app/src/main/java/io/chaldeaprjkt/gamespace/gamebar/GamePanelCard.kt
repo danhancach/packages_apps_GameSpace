@@ -100,7 +100,7 @@ fun GamePanelCard(
     maxHeight: Dp = Dp.Unspecified,
 ) {
 
-    val panelWidth = 300.dp
+    val panelWidth = GameBarDimens.PanelWidth
 
     val initialMode = remember {
         fromSystemGameMode(gameModeUtils.activeGame?.mode ?: GameManager.GAME_MODE_STANDARD)
@@ -119,9 +119,11 @@ fun GamePanelCard(
             )
             .width(panelWidth)
             .wrapContentHeight(),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+        shape = GameBarPanelShape,
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
     ) {
         GamePanelContent(
             apps = apps,
@@ -259,10 +261,10 @@ private fun SystemTabToolbar(onEditClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shape = GameBarSectionShape,
             )
-            .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+            .padding(start = 14.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -303,8 +305,11 @@ fun PanelTileSection(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
-                    .padding(start = 8.dp, bottom = 4.dp),
+                    .background(
+                        MaterialTheme.colorScheme.surfaceContainerHigh,
+                        GameBarSectionShape,
+                    )
+                    .padding(start = 10.dp, end = 8.dp, top = 4.dp, bottom = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 BrightnessSlider(interactor = interactor)
@@ -334,7 +339,7 @@ fun PanelTileSection(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(168.dp)
+                    .height(176.dp)
                     .padding(horizontal = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)
             ) {
@@ -417,11 +422,7 @@ fun HeaderInfoBar(
     val batteryLevel = batteryInfo.level
     val temp = batteryInfo.temperatureC.toInt()
 
-    val modeColor = when (currentMode) {
-        GameMode.Performance -> Color(0xFFD32F2F)
-        GameMode.PowerSave -> Color(0xFF388E3C)
-        GameMode.Balanced -> Color(0xFFEF6C00)
-    }
+    val modeColor = currentMode.accentColor()
 
     Column(
         modifier = modifier
@@ -430,14 +431,14 @@ fun HeaderInfoBar(
                 animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()
             )
             .background(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(12.dp)
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shape = GameBarSectionShape,
             )
             .padding(
-                top = if (headerExpanded) 12.dp else 8.dp,
-                bottom = if (headerExpanded) 12.dp else 8.dp,
-                start = 12.dp,
-                end = 4.dp
+                top = if (headerExpanded) 14.dp else 10.dp,
+                bottom = if (headerExpanded) 14.dp else 10.dp,
+                start = 14.dp,
+                end = 6.dp
             )
     ) {
         Column(
@@ -958,32 +959,40 @@ fun SettingToggleRow(
 @Composable
 fun TileButton(tile: TileAction, modifier: Modifier = Modifier) {
     val isEnabled by tile.observeEnabled()
-    val bgColor = if (isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceBright
-    val fgColor = if (isEnabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    val bgColor = if (isEnabled) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerHighest
+    }
+    val fgColor = if (isEnabled) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
 
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val pressScale by animateFloatAsState(
-        targetValue = if (isPressed) 0.9f else 1f,
+        targetValue = if (isPressed) 0.92f else 1f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "press_scale",
     )
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
         modifier = modifier
             .graphicsLayer {
                 scaleX = pressScale
                 scaleY = pressScale
             }
-            .height(80.dp),
+            .height(84.dp),
     ) {
         Box(
             modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
+                .size(GameBarDimens.TileIconSize)
+                .clip(GameBarTileShape)
                 .background(bgColor)
                 .clickable(
                     interactionSource = interactionSource,
@@ -995,17 +1004,17 @@ fun TileButton(tile: TileAction, modifier: Modifier = Modifier) {
                 painter = painterResource(tile.icon),
                 contentDescription = tile.label,
                 tint = fgColor,
-                modifier = Modifier.size(22.dp),
+                modifier = Modifier.size(24.dp),
             )
         }
         Text(
             text = tile.label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             textAlign = TextAlign.Center,
             modifier = Modifier
-                .width(64.dp)
+                .width(68.dp)
                 .basicMarquee(),
         )
     }
@@ -1248,19 +1257,17 @@ fun GameModeSelector(
     ) {
         modes.forEach { mode ->
             val isSelected = mode == selectedMode
-
-            val color = when (mode) {
-                GameMode.Performance -> Color(0xFFD32F2F)
-                GameMode.PowerSave -> Color(0xFF388E3C)
-                GameMode.Balanced -> Color(0xFFEF6C00)
-            }
+            val container = if (isSelected) mode.accentContainer() else
+                MaterialTheme.colorScheme.surfaceContainerHighest
+            val content = if (isSelected) mode.onAccentContainer() else
+                MaterialTheme.colorScheme.onSurfaceVariant
 
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(color.copy(alpha = if (isSelected) 0.4f else 0.2f))
+                    .height(52.dp)
+                    .clip(GameBarModeShape)
+                    .background(container)
                     .clickable {
                         if (!isSelected) {
                             onModeSelected(mode)
@@ -1272,7 +1279,7 @@ fun GameModeSelector(
                 Icon(
                     imageVector = mode.icon,
                     contentDescription = mode.displayName,
-                    tint = color.copy(alpha = if (isSelected) 1f else 0.4f),
+                    tint = content,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -1293,10 +1300,10 @@ fun QuickStartAppSidebar(apps: List<AppInfo>) {
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .background(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(12.dp)
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    shape = GameBarSectionShape,
                 )
-                .padding(8.dp)
+                .padding(10.dp)
         ) {
             Row(
                 modifier = Modifier
