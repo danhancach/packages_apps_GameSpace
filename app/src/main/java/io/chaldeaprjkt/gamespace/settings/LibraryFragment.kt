@@ -17,12 +17,15 @@ package io.chaldeaprjkt.gamespace.settings
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
 import androidx.preference.SwitchPreferenceCompat
 
 import com.android.settingslib.widget.SettingsBasePreferenceFragment
+import com.google.android.material.appbar.CollapsingToolbarLayout
 
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -69,6 +72,22 @@ class LibraryFragment : Hilt_LibraryFragment(), Preference.OnPreferenceChangeLis
         if (gameIconVault.isAvailable() && gameIconVault.enabled) {
             Thread({ gameIconVault.applyForLibrary(true) }, "GameIconVault-apply").start()
         }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        val root = inflater.inflate(R.layout.fragment_collapsing_toolbar, container, false)
+        val prefContainer = root.findViewById<ViewGroup>(R.id.preference_container)
+        val prefView = super.onCreateView(inflater, prefContainer, savedInstanceState)
+        prefContainer.addView(prefView)
+
+        val collapsingToolbar = root.findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar)
+        collapsingToolbar.title = getString(R.string.tab_library)
+
+        return root
     }
 
     private fun updateLibraryOptions() {

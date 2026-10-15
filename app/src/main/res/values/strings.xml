@@ -17,6 +17,7 @@
     <string name="app_search_title">Search</string>
     <string name="add_game">Add game</string>
     <string name="launch_game">Launch game</string>
+    <string name="game_list_empty">No games in library yet</string>
 
     <!-- Icon vault (AxSandbox hide from launcher) -->
     <string name="icon_vault_title">Store game icons</string>

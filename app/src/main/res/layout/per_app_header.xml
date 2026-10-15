@@ -15,11 +15,18 @@
     limitations under the License.
   -->
 
+<!-- The don (Single) bo goc 20dp cho header per-app -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/gamespace_preference_card_margin_horizontal"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="@dimen/gamespace_preference_card_gap"
+    android:background="@drawable/gamespace_preference_bg_single"
     android:orientation="vertical"
     android:gravity="center"
+    android:paddingStart="@dimen/gamespace_preference_row_padding_start"
+    android:paddingEnd="@dimen/gamespace_preference_row_padding_end"
     android:paddingTop="24dp"
     android:paddingBottom="24dp">
 
@@ -27,7 +34,8 @@
         android:id="@android:id/icon"
         android:layout_width="72dp"
         android:layout_height="72dp"
-        android:layout_marginBottom="12dp" />
+        android:layout_marginBottom="12dp"
+        android:scaleType="fitCenter" />
 
     <TextView
         android:id="@android:id/title"

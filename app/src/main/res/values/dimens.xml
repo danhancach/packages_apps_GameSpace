@@ -18,4 +18,27 @@
 <resources>
     <dimen name="notification_vertical_offset_landscape">48dp</dimen>
     <dimen name="notification_vertical_offset_portrait">36dp</dimen>
+
+    <!-- CollapsingToolbar Expressive (ReSukiSU / Updater pattern) -->
+    <dimen name="gamespace_collapsing_toolbar_height">152dp</dimen>
+    <dimen name="settingslib_scrim_visible_height_trigger">137dp</dimen>
+    <dimen name="expanded_title_margin_start">24dp</dimen>
+    <dimen name="expanded_title_margin_end">24dp</dimen>
+    <dimen name="expanded_title_margin_bottom">32dp</dimen>
+
+    <!-- Settings Expressive preference tokens (SettingsLib v36 / Updater SSOT) -->
+    <dimen name="gamespace_preference_corner_radius">20dp</dimen>
+    <dimen name="gamespace_preference_corner_inner">4dp</dimen>
+    <dimen name="gamespace_preference_card_margin_horizontal">16dp</dimen>
+    <dimen name="gamespace_preference_card_gap">2dp</dimen>
+    <dimen name="gamespace_preference_row_min_height">72dp</dimen>
+    <!-- Chi gan len text-frame / cot chu 2 dong ben trong, khong gan len root row -->
+    <dimen name="gamespace_preference_row_padding_vertical">16dp</dimen>
+    <dimen name="gamespace_preference_row_padding_start">16dp</dimen>
+    <dimen name="gamespace_preference_row_padding_end">16dp</dimen>
+    <dimen name="gamespace_preference_icon_size">40dp</dimen>
+    <dimen name="gamespace_preference_icon_margin_end">12dp</dimen>
+
+    <!-- Dialog / popup corner radius -->
+    <dimen name="gamespace_dialog_corner_radius">28dp</dimen>
 </resources>

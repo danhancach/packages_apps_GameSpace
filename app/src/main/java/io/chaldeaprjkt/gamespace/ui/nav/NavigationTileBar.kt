@@ -140,9 +140,10 @@ fun TelegramBottomNavDock(
     // Dock height = pill + gap + gesture only (no extra band above the pill).
     val dockHeight = bottomPadding + NavigationTileBarHeight
     // Scrim covers gesture → mid/lower pill area, matching Telegram ActionBarLayout
-    // drawNavigationBarGradient (~1.33 × nav height, surface tint).
+    // drawNavigationBarGradient (~1.33 × nav height, surfaceContainer tint).
     val scrimHeight = max(navBottom * 1.33f, navBottom + NavigationTileBarBottomGap + 12.dp)
-    val surface = MaterialTheme.colorScheme.surface
+    // Doi sang surfaceContainer theo chuan Expressive (khong dung surface legacy)
+    val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
 
     Box(
         modifier = modifier
@@ -157,10 +158,10 @@ fun TelegramBottomNavDock(
                 .background(
                     Brush.verticalGradient(
                         colorStops = arrayOf(
-                            0.0f to surface.copy(alpha = 0.08f),
-                            0.55f to surface.copy(alpha = 0.55f),
-                            0.88f to surface.copy(alpha = 0.88f),
-                            1.0f to surface.copy(alpha = 0.96f),
+                            0.0f to surfaceContainer.copy(alpha = 0.08f),
+                            0.55f to surfaceContainer.copy(alpha = 0.55f),
+                            0.88f to surfaceContainer.copy(alpha = 0.88f),
+                            1.0f to surfaceContainer.copy(alpha = 0.96f),
                         ),
                     ),
                 ),

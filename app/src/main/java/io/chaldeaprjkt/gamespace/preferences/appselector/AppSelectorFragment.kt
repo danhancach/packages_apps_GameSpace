@@ -20,15 +20,21 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
 
 import com.android.settingslib.widget.SettingsBasePreferenceFragment
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.appbar.MaterialToolbar
 
 import dagger.hilt.android.AndroidEntryPoint
 
+import io.chaldeaprjkt.gamespace.R
 import io.chaldeaprjkt.gamespace.data.SystemSettings
 import io.chaldeaprjkt.gamespace.preferences.AppListPreferences
 
@@ -43,6 +49,28 @@ class AppSelectorFragment : Hilt_AppSelectorFragment() {
 
     @Inject
     lateinit var systemSettings: SystemSettings
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        val root = inflater.inflate(R.layout.fragment_collapsing_toolbar, container, false)
+        val prefContainer = root.findViewById<ViewGroup>(R.id.preference_container)
+        val prefView = super.onCreateView(inflater, prefContainer, savedInstanceState)
+        prefContainer.addView(prefView)
+
+        val collapsingToolbar = root.findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar)
+        collapsingToolbar.title = getString(R.string.app_selector_label)
+
+        val toolbar = root.findViewById<MaterialToolbar>(R.id.toolbar)
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_left)
+        toolbar.setNavigationOnClickListener {
+            activity?.onBackPressedDispatcher?.onBackPressed()
+        }
+
+        return root
+    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceScreen = preferenceManager.createPreferenceScreen(requireContext())
@@ -91,12 +119,16 @@ class AppSelectorFragment : Hilt_AppSelectorFragment() {
 
             val screen = preferenceScreen ?: return@launch
             screen.removeAll()
+            // Gom danh sach vao PreferenceCategory de adapter ap dung bo goc Expressive
+            val category = PreferenceCategory(requireContext())
+            screen.addPreference(category)
             apps.forEach { app ->
                 val pref = Preference(requireContext()).apply {
                     key = app.packageName
                     title = app.label
                     summary = app.packageName
                     icon = app.icon
+                    layoutResource = R.layout.app_selector_item
                     isPersistent = false
                     setOnPreferenceClickListener {
                         requireActivity().setResult(
@@ -109,7 +141,7 @@ class AppSelectorFragment : Hilt_AppSelectorFragment() {
                         true
                     }
                 }
-                screen.addPreference(pref)
+                category.addPreference(pref)
             }
         }
     }

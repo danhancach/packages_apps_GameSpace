@@ -16,21 +16,59 @@
 
 <resources>
 
-    <style name="GameSpaceTheme" parent="Theme.SubSettingsBase.Expressive">
-        <!-- For AndroidX AlertDialog - legacy for expressive fix -->
-        <item name="alertDialogTheme">@style/Theme.AlertDialog.SettingsLib</item>
+    <!-- Parent Theme.Material3.DayNight.NoActionBar (chuoi AppCompat, dong bo Updater) -->
+    <style name="GameSpaceTheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Font mac dinh he thong (khong dung typeface Material rieng) -->
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">?attr/colorSurfaceContainer</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
+        <item name="android:windowLightNavigationBar">?attr/isLightTheme</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="alertDialogTheme">@style/GameSpaceTheme.AlertDialogTheme</item>
+        <item name="materialAlertDialogTheme">@style/GameSpaceTheme.AlertDialogTheme</item>
         <item name="preferenceTheme">@style/PreferenceTheme.SettingsLib</item>
         <item name="android:switchStyle">@style/Switch.SettingsLib</item>
         <item name="switchStyle">@style/SwitchCompat.SettingsLib</item>
+        <item name="popupMenuStyle">@style/Widget.Material3.PopupMenu</item>
+        <item name="actionOverflowMenuStyle">@style/Widget.Material3.PopupMenu.Overflow</item>
+    </style>
+
+    <!-- Dialog / alert 28dp SurfaceContainerHigh (dong bo Updater / SettingsLib) -->
+    <style name="GameSpaceTheme.AlertDialogTheme" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="android:colorBackground">?attr/colorSurfaceContainerHigh</item>
+        <item name="dialogCornerRadius">@dimen/gamespace_dialog_corner_radius</item>
     </style>
 
     <style name="GameSpaceTheme.Panel" parent="GameSpaceTheme">
-        <item name="cardBackgroundColor">@color/surface</item>
+        <!-- Dung colorSurfaceBright thay vi @color/surface legacy -->
+        <item name="cardBackgroundColor">?attr/colorSurfaceBright</item>
         <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
     </style>
 
     <style name="GameSpaceTheme.Panel.Tile">
         <item name="android:textColor">@color/tile_title_color</item>
+    </style>
+
+    <!-- CollapsingToolbar typography (ReSukiSU / Updater: 36sp expanded / 22sp collapsed) -->
+    <style name="TextAppearance.GameSpace.CollapsingToolbar.Expanded" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textSize">36sp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.GameSpace.CollapsingToolbar.Collapsed" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
 </resources>

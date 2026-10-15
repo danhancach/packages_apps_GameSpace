@@ -23,22 +23,29 @@
         app:allowDividerAbove="false"
         app:allowDividerBelow="false" />
 
-    <ListPreference
-        android:defaultValue="1"
-        android:key="per_app_preferred_mode"
-        android:persistent="false"
-        android:summary="%s"
-        android:title="@string/per_app_mode_title" />
+    <!-- Boc cac preference vao PreferenceCategory de adapter ap dung bo goc Top/Center/Bottom -->
+    <PreferenceCategory
+        android:key="per_app_category"
+        android:title="@string/per_app_title">
 
-    <ListPreference
-        android:key="per_app_angle_driver"
-        android:persistent="false"
-        android:summary="%s"
-        android:title="@string/per_app_angle_title" />
+        <ListPreference
+            android:defaultValue="1"
+            android:key="per_app_preferred_mode"
+            android:persistent="false"
+            android:summary="%s"
+            android:title="@string/per_app_mode_title" />
 
-    <Preference
-        android:icon="@drawable/ic_remove"
-        android:key="per_app_unregister"
-        app:allowDividerAbove="true" />
+        <ListPreference
+            android:key="per_app_angle_driver"
+            android:persistent="false"
+            android:summary="%s"
+            android:title="@string/per_app_angle_title" />
+
+        <Preference
+            android:icon="@drawable/ic_remove"
+            android:key="per_app_unregister"
+            app:allowDividerAbove="true" />
+
+    </PreferenceCategory>
 
 </PreferenceScreen>

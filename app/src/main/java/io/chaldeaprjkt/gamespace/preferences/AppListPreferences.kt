@@ -32,7 +32,6 @@ import androidx.preference.PreferenceViewHolder
 
 import io.chaldeaprjkt.gamespace.R
 import io.chaldeaprjkt.gamespace.data.GameConfig
-import io.chaldeaprjkt.gamespace.data.SystemSettings
 import io.chaldeaprjkt.gamespace.data.UserGame
 import io.chaldeaprjkt.gamespace.settings.PerAppSettingsActivity
 import io.chaldeaprjkt.gamespace.utils.GameModeUtils.Companion.describeGameMode
@@ -58,15 +57,46 @@ class AppListPreferences @JvmOverloads constructor(context: Context, attrs: Attr
 
     private lateinit var registeredAppClickAction: (String) -> Unit
 
+    private var currentAddPrefPosition = 1
+    private var currentTotalCount = 2
+
     init {
         isOrderingAsAdded = false
     }
 
+    // Bo goc nhom the Top/Center/Bottom/Single 20/4dp theo chuan Expressive
+    private fun getBackgroundForPosition(position: Int, total: Int): Int = when {
+        total <= 1 -> R.drawable.gamespace_preference_bg_single
+        position == 0 -> R.drawable.gamespace_preference_bg_top
+        position == total - 1 -> R.drawable.gamespace_preference_bg_bottom
+        else -> R.drawable.gamespace_preference_bg_center
+    }
+
+    private val emptyPref by lazy {
+        object : Preference(context) {
+            override fun onBindViewHolder(holder: PreferenceViewHolder) {
+                super.onBindViewHolder(holder)
+                holder.itemView.setBackgroundResource(R.drawable.gamespace_preference_bg_top)
+            }
+        }.apply {
+            key = KEY_EMPTY_STATE
+            layoutResource = R.layout.library_empty_item
+            isPersistent = false
+            isSelectable = false
+        }
+    }
+
     private val makeAddPref by lazy {
-        Preference(context).apply {
+        object : Preference(context) {
+            override fun onBindViewHolder(holder: PreferenceViewHolder) {
+                super.onBindViewHolder(holder)
+                val bg = getBackgroundForPosition(currentAddPrefPosition, currentTotalCount)
+                holder.itemView.setBackgroundResource(bg)
+            }
+        }.apply {
             title = context.getString(R.string.add_game)
             key = KEY_ADD_GAME
-            setIcon(R.drawable.ic_add)
+            layoutResource = R.layout.library_add_item
             isPersistent = false
             onPreferenceClickListener = this@AppListPreferences
         }
@@ -113,13 +143,14 @@ class AppListPreferences @JvmOverloads constructor(context: Context, attrs: Attr
         }
     }
 
-    private fun buildGamePref(game: UserGame): Preference {
+    private fun buildGamePref(game: UserGame, position: Int, total: Int): Preference {
         val info = getAppInfo(game.packageName)
         val pm = context.packageManager
 
         return object : Preference(context) {
             override fun onBindViewHolder(holder: PreferenceViewHolder) {
                 super.onBindViewHolder(holder)
+                holder.itemView.setBackgroundResource(getBackgroundForPosition(position, total))
 
                 val canLaunch = pm.getLaunchIntentForPackage(game.packageName) != null
                 holder.findViewById(R.id.launch_icon)?.let { play ->
@@ -140,6 +171,12 @@ class AppListPreferences @JvmOverloads constructor(context: Context, attrs: Attr
             icon = info?.loadIcon(pm)
             layoutResource = R.layout.library_item
             isPersistent = false
+            setOnPreferenceClickListener {
+                if (::registeredAppClickAction.isInitialized) {
+                    registeredAppClickAction(game.packageName)
+                }
+                true
+            }
         }
     }
 
@@ -148,13 +185,26 @@ class AppListPreferences @JvmOverloads constructor(context: Context, attrs: Attr
         systemSettings.userGames?.let { apps.addAll(it) }
 
         removeAll()
-        addPreference(makeAddPref)
 
-        apps
+        val validGames = apps
             .filter { getAppInfo(it.packageName) != null }
-            .map(::buildGamePref)
-            .sortedBy { it.title.toString().lowercase() }
-            .forEach(::addPreference)
+            .sortedBy { getAppInfo(it.packageName)?.loadLabel(context.packageManager).toString().lowercase() }
+
+        if (validGames.isEmpty()) {
+            // Khi thu vien trong: Empty state o tren (Top), nut Them tro choi o duoi (Bottom)
+            currentAddPrefPosition = 1
+            currentTotalCount = 2
+            addPreference(emptyPref)
+            addPreference(makeAddPref)
+        } else {
+            val total = validGames.size + 1
+            currentAddPrefPosition = validGames.size
+            currentTotalCount = total
+            validGames.forEachIndexed { index, game ->
+                addPreference(buildGamePref(game, index, total))
+            }
+            addPreference(makeAddPref)
+        }
     }
 
     private fun registerApp(packageName: String) {
@@ -212,6 +262,7 @@ class AppListPreferences @JvmOverloads constructor(context: Context, attrs: Attr
 
     companion object {
         const val KEY_ADD_GAME = "add_game"
+        const val KEY_EMPTY_STATE = "empty_state"
         const val EXTRA_APP = "selected_app"
         const val KEY_DENIED_LIST = "gamespace_denied_list"
         const val KEY_AUTO_GAME_DETECT = "gamespace_auto_game_detect"

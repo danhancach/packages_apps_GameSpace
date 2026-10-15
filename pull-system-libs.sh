@@ -23,7 +23,6 @@ declare -a JARS=(
   "framework.jar|frameworks/base/framework-minus-apex/android_common/combined/framework.jar"
   "SettingsLib.jar|frameworks/base/packages/SettingsLib/SettingsLib/android_common/javac/SettingsLib.jar"
   "SettingsLibSettingsTheme.jar|frameworks/base/packages/SettingsLib/SettingsTheme/SettingsLibSettingsTheme/android_common/kotlin/SettingsLibSettingsTheme.jar"
-  "SettingsLibCollapsingToolbarBaseActivity.jar|frameworks/base/packages/SettingsLib/CollapsingToolbarBaseActivity/SettingsLibCollapsingToolbarBaseActivity/android_common/javac/SettingsLibCollapsingToolbarBaseActivity.jar"
   "SettingsLibDisplayUtils.jar|frameworks/base/packages/SettingsLib/DisplayUtils/SettingsLibDisplayUtils/android_common/javac/SettingsLibDisplayUtils.jar"
   "SettingsLibMainSwitchPreference.jar|frameworks/base/packages/SettingsLib/MainSwitchPreference/SettingsLibMainSwitchPreference/android_common/javac/SettingsLibMainSwitchPreference.jar"
   "SettingsLibLayoutPreference.jar|frameworks/base/packages/SettingsLib/LayoutPreference/SettingsLibLayoutPreference/android_common/javac/SettingsLibLayoutPreference.jar"

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Host mong cho ViewPager2 + Compose floating nav bar (ReSukiSU / Updater pattern) -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/settings_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurfaceContainer">
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/settings_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Compose floating pill bar tren Activity goc, khong can reparent hack -->
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/settings_nav_compose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal" />
+
+</FrameLayout>

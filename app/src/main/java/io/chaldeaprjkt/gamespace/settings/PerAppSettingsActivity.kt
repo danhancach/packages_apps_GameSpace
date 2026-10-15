@@ -2,6 +2,7 @@
  * Copyright (C) 2021 Chaldeaprjkt
  * Copyright (C) 2022-2026 crDroid Android Project
  * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2026 danhancach
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +18,30 @@
  */
 package io.chaldeaprjkt.gamespace.settings
 
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.view.ViewGroup
 import androidx.activity.viewModels
-import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import dagger.hilt.android.AndroidEntryPoint
+import io.chaldeaprjkt.gamespace.R
 import io.chaldeaprjkt.gamespace.ui.viewmodel.PerAppSettingsViewModel
 
-@AndroidEntryPoint(CollapsingToolbarBaseActivity::class)
+@AndroidEntryPoint(AppCompatActivity::class)
 class PerAppSettingsActivity : Hilt_PerAppSettingsActivity() {
 
     private val viewModel: PerAppSettingsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        applyDynamicColorOverlay()
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_sub_settings)
+        applyEdgeToEdge()
 
         val packageName = intent.getStringExtra(EXTRA_PACKAGE) ?: run {
             finish()
@@ -42,11 +54,44 @@ class PerAppSettingsActivity : Hilt_PerAppSettingsActivity() {
             supportFragmentManager
                 .beginTransaction()
                 .replace(
-                    com.android.settingslib.collapsingtoolbar.R.id.content_frame,
+                    R.id.content_frame,
                     PerAppSettingsFragment()
                 )
                 .commit()
         }
+    }
+
+    private fun applyDynamicColorOverlay() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return
+        }
+        theme.applyStyle(
+            com.google.android.material.R.style.ThemeOverlay_Material3_DynamicColors_DayNight,
+            true,
+        )
+    }
+
+    private fun applyEdgeToEdge() {
+        val window = window
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.isNavigationBarContrastEnforced = false
+        window.navigationBarColor = Color.TRANSPARENT
+        window.statusBarColor = Color.TRANSPARENT
+
+        val root = findViewById<ViewGroup>(R.id.sub_settings_root)
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, windowInsets ->
+            val insets: Insets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.systemBars()
+                    or WindowInsetsCompat.Type.ime()
+                    or WindowInsetsCompat.Type.displayCutout(),
+            )
+            val statusTop = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            v.setPadding(insets.left, statusTop, insets.right, insets.bottom)
+            (v as ViewGroup).clipToPadding = false
+            (v as ViewGroup).clipChildren = false
+            WindowInsetsCompat.CONSUMED
+        }
+        ViewCompat.requestApplyInsets(root)
     }
 
     companion object {

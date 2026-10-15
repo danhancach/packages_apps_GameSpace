@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nen the preference Bottom (4dp tren / 20dp duoi) giong SettingsLib Expressive -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/colorControlHighlight">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorSurfaceBright" />
+            <corners
+                android:topLeftRadius="@dimen/gamespace_preference_corner_inner"
+                android:topRightRadius="@dimen/gamespace_preference_corner_inner"
+                android:bottomLeftRadius="@dimen/gamespace_preference_corner_radius"
+                android:bottomRightRadius="@dimen/gamespace_preference_corner_radius" />
+        </shape>
+    </item>
+</ripple>

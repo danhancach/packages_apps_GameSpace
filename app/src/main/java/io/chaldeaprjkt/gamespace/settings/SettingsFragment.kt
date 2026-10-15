@@ -21,12 +21,15 @@ import android.os.Build
 import android.os.Bundle
 import android.os.SystemProperties
 import android.os.Vibrator
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.SwitchPreferenceCompat
 
 import com.android.settingslib.widget.SettingsBasePreferenceFragment
+import com.google.android.material.appbar.CollapsingToolbarLayout
 
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -54,6 +57,22 @@ class SettingsFragment : Hilt_SettingsFragment(),
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings_preferences, rootKey)
         updatePreferences()
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        val root = inflater.inflate(R.layout.fragment_collapsing_toolbar, container, false)
+        val prefContainer = root.findViewById<ViewGroup>(R.id.preference_container)
+        val prefView = super.onCreateView(inflater, prefContainer, savedInstanceState)
+        prefContainer.addView(prefView)
+
+        val collapsingToolbar = root.findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar)
+        collapsingToolbar.title = getString(R.string.tab_settings)
+
+        return root
     }
 
     private fun hasVibrator(): Boolean {
@@ -132,7 +151,7 @@ class SettingsFragment : Hilt_SettingsFragment(),
 
     override fun onResume() {
         super.onResume()
-        // Title owned by SettingsPagerFragment (both pages stay resumed with VP2).
+        // Floating bottom nav padding tren preference list
         applyFloatingBottomNavPadding()
     }
 

@@ -18,7 +18,9 @@ package io.chaldeaprjkt.gamespace.settings
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 
@@ -28,6 +30,8 @@ import androidx.preference.Preference
 
 import com.android.settingslib.widget.LayoutPreference
 import com.android.settingslib.widget.SettingsBasePreferenceFragment
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.appbar.MaterialToolbar
 
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -40,9 +44,26 @@ class PerAppSettingsFragment : Hilt_PerAppSettingsFragment(),
 
     private val viewModel: PerAppSettingsViewModel by activityViewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activity?.title = context?.getString(R.string.per_app_title)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        val root = inflater.inflate(R.layout.fragment_collapsing_toolbar, container, false)
+        val prefContainer = root.findViewById<ViewGroup>(R.id.preference_container)
+        val prefView = super.onCreateView(inflater, prefContainer, savedInstanceState)
+        prefContainer.addView(prefView)
+
+        val collapsingToolbar = root.findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar)
+        collapsingToolbar.title = getString(R.string.per_app_title)
+
+        val toolbar = root.findViewById<MaterialToolbar>(R.id.toolbar)
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_left)
+        toolbar.setNavigationOnClickListener {
+            activity?.onBackPressedDispatcher?.onBackPressed()
+        }
+
+        return root
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {

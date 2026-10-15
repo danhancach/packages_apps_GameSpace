@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nen the preference Single (20dp bon goc) giong SettingsLib Expressive -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/colorControlHighlight">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorSurfaceBright" />
+            <corners android:radius="@dimen/gamespace_preference_corner_radius" />
+        </shape>
+    </item>
+</ripple>

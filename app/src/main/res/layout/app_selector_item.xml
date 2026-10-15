@@ -15,39 +15,50 @@
     limitations under the License.
   -->
 
+<!-- Anatomy Expressive: root minHeight 72dp, pad ngang 16dp, pad doc 0; text frame pad doc 16dp; icon frame 40dp + marginEnd 12dp -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/app_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:minHeight="@dimen/gamespace_preference_row_min_height"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="12dp"
-    android:paddingVertical="4dp">
+    android:paddingStart="@dimen/gamespace_preference_row_padding_start"
+    android:paddingEnd="@dimen/gamespace_preference_row_padding_end"
+    android:paddingTop="0dp"
+    android:paddingBottom="0dp">
 
     <ImageView
-        android:id="@+id/app_icon"
-        android:layout_width="42dp"
-        android:layout_height="42dp"
-        android:layout_margin="8dp"
+        android:id="@android:id/icon"
+        android:layout_width="@dimen/gamespace_preference_icon_size"
+        android:layout_height="@dimen/gamespace_preference_icon_size"
+        android:layout_marginEnd="@dimen/gamespace_preference_icon_margin_end"
         android:scaleType="fitCenter" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/widget_frame"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:orientation="vertical"
-        android:paddingHorizontal="8dp">
+        android:paddingTop="@dimen/gamespace_preference_row_padding_vertical"
+        android:paddingBottom="@dimen/gamespace_preference_row_padding_vertical"
+        android:paddingStart="0dp"
+        android:paddingEnd="@dimen/gamespace_preference_icon_margin_end">
 
         <TextView
-            android:id="@+id/app_name"
+            android:id="@android:id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceListItem"
+            android:textColor="?android:attr/textColorPrimary" />
 
         <TextView
-            android:id="@+id/app_summary"
+            android:id="@android:id/summary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceListItemSecondary"
+            android:textColor="?android:attr/textColorSecondary" />
 
     </LinearLayout>
 
