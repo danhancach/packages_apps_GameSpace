@@ -23,6 +23,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.chaldeaprjkt.gamespace.data.AppSettings
+import io.chaldeaprjkt.gamespace.data.AppSelectorRepository
 import io.chaldeaprjkt.gamespace.data.GameIconVault
 import io.chaldeaprjkt.gamespace.data.GameSession
 import io.chaldeaprjkt.gamespace.data.SystemSettings
@@ -64,6 +65,13 @@ object MainModule {
         appSettings: AppSettings,
         systemSettings: SystemSettings,
     ) = GameIconVault(context, appSettings, systemSettings)
+
+    @Provides
+    @Singleton
+    fun provideAppSelectorRepository(
+        @ApplicationContext context: Context,
+        systemSettings: SystemSettings,
+    ) = AppSelectorRepository(context, systemSettings)
 
     @Provides
     @Singleton

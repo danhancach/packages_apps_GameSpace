@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- LSPosed modules-style search pill: leading icon + EditText + clear. Dynamic color via attrs. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/app_selector_search_row"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSurfaceContainer"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/gamespace_search_pill_margin_horizontal"
+    android:paddingEnd="@dimen/gamespace_search_pill_margin_horizontal"
+    android:paddingTop="@dimen/gamespace_search_pill_margin_top"
+    android:paddingBottom="@dimen/gamespace_search_pill_margin_bottom">
+
+    <LinearLayout
+        android:id="@+id/app_selector_search_pill"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/gamespace_search_pill_min_height"
+        android:background="@drawable/gamespace_search_pill_bg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/gamespace_search_pill_padding_horizontal"
+        android:paddingEnd="@dimen/gamespace_search_pill_padding_horizontal">
+
+        <ImageView
+            android:id="@+id/app_selector_search_icon"
+            android:layout_width="@dimen/gamespace_search_pill_icon_size"
+            android:layout_height="@dimen/gamespace_search_pill_icon_size"
+            android:contentDescription="@null"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_search"
+            android:tint="?attr/colorOnSurfaceVariant" />
+
+        <EditText
+            android:id="@+id/app_selector_search_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:background="@null"
+            android:hint="@string/app_search_title"
+            android:imeOptions="actionSearch"
+            android:importantForAutofill="no"
+            android:inputType="text|textNoSuggestions"
+            android:maxLines="1"
+            android:minHeight="@dimen/gamespace_search_pill_min_height"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant"
+            android:textDirection="locale" />
+
+        <ImageButton
+            android:id="@+id/app_selector_search_clear"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/app_selector_search_clear"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_close"
+            android:tint="?attr/colorOnSurfaceVariant"
+            android:visibility="gone" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,21 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Host mong cho ViewPager2 + Compose floating nav bar (ReSukiSU / Updater pattern) -->
+<!--
+     Host: ViewPager2 + Compose floating nav (parent layer) + Add-game child overlay.
+     Parent+nav dich cung parallax; child cover tu phai (Miuix submenu).
+-->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/settings_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurfaceContainer">
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/settings_pager"
+    <!-- Clip viewport: hit-test theo visual bounds sau translation -->
+    <FrameLayout
+        android:id="@+id/settings_transition_viewport"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:clipChildren="true"
+        android:clipToPadding="true">
 
-    <!-- Compose floating pill bar tren Activity goc, khong can reparent hack -->
-    <androidx.compose.ui.platform.ComposeView
-        android:id="@+id/settings_nav_compose"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal" />
+        <!-- Parent = pager + bottom nav (nav roi cung trang cha) -->
+        <FrameLayout
+            android:id="@+id/settings_parent_layer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <io.chaldeaprjkt.gamespace.ui.gesture.ViewPager2AxisGuard
+                android:id="@+id/settings_pager_guard"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/settings_pager"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </io.chaldeaprjkt.gamespace.ui.gesture.ViewPager2AxisGuard>
+
+            <androidx.compose.ui.platform.ComposeView
+                android:id="@+id/settings_nav_compose"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal" />
+        </FrameLayout>
+
+        <!-- Scrim giua parent/child; clickable runtime khi block parent (applyAddGameProgress) -->
+        <View
+            android:id="@+id/settings_nav_scrim"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#FF000000"
+            android:clickable="false"
+            android:focusable="false"
+            android:importantForAccessibility="no"
+            android:visibility="gone" />
+
+        <!-- Child host: AppSelectorFragment overlay -->
+        <FrameLayout
+            android:id="@+id/settings_child_host"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="invisible" />
+    </FrameLayout>
 
 </FrameLayout>

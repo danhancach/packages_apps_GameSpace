@@ -14,6 +14,8 @@
     <string name="game_list_title">Thư viện</string>
     <string name="library_options_title">Tùy chọn thư viện</string>
     <string name="app_search_title">Tìm kiếm</string>
+    <string name="app_selector_search_clear">Xóa tìm kiếm</string>
+    <string name="app_selector_search_empty">Không có ứng dụng khớp</string>
     <string name="add_game">Add game</string>
     <string name="launch_game">Launch game</string>
     <string name="game_list_empty">Chưa có trò chơi nào trong thư viện</string>
@@ -43,6 +45,7 @@
     <string name="per_app_mode_title">Chế độ ưu tiên</string>
     <string name="per_app_angle_title">Sử dụng ANGLE (thử nghiệm)</string>
     <string name="per_app_unregister">Xóa %1$s khỏi thư viện</string>
+    <string name="library_remove_from_library">Xóa khỏi thư viện</string>
     <!-- Disable ADB debugging -->
     <string name="adb_disabled_title">Tắt gỡ lỗi USB</string>
     <string name="adb_disabled_summary">Tạm thời vô hiệu hóa gỡ lỗi USB ADB khi ở trong trò chơi</string>

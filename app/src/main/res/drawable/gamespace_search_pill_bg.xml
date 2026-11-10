@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- LSPosed modules search pill: full-width rounded SurfaceContainerHigh (Material, khong Miuix motion). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="?attr/colorSurfaceContainerHigh" />
+    <corners android:radius="@dimen/gamespace_search_pill_corner" />
+</shape>

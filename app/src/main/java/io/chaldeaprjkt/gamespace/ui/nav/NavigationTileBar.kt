@@ -19,16 +19,16 @@ import android.view.View
 import android.view.ViewTreeObserver
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -44,14 +44,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import kotlin.math.floor
 import kotlin.math.roundToInt
 
 /**
@@ -71,23 +72,9 @@ val NavigationTileBarBottomGap = 8.dp
 
 private const val SELECTED_INDICATOR_ALPHA = 0.15f
 
-internal fun foldSelectionProgressForDraw(progress: Float, tabCount: Int): Float {
-    val count = tabCount.coerceAtLeast(1).toFloat()
-    if (!progress.isFinite()) return 0f
-    val min = -1f
-    val max = count + 1f
-    var folded = progress
-    val span = count
-    if (folded >= max) {
-        folded -= floor((folded - min) / span) * span
-    }
-    if (folded < min) {
-        folded += floor((max - folded - 0.0001f) / span) * span
-    }
-    while (folded >= max) folded -= span
-    while (folded < min) folded += span
-    return folded
-}
+/** @deprecated Dung NavIndicatorGeometry.foldProgress — giu alias. */
+internal fun foldSelectionProgressForDraw(progress: Float, tabCount: Int): Float =
+    NavIndicatorGeometry.foldProgress(progress, tabCount)
 
 /**
  * Real navigation-bar inset from the window root.
@@ -183,64 +170,64 @@ fun TelegramBottomNavDock(
     }
 }
 
+/**
+ * Compact floating pill bar.
+ *
+ * [equalItemWidth]: cot deu = max(natural label widths, min touch), da bound available.
+ * Indicator noi suy tren cot deu (RTL lat qua NavIndicatorGeometry) — khong chia rowWidth/tabCount
+ * khi item natural width lech.
+ */
 @Composable
 fun NavigationTileBar(
     tabCount: Int,
     selectionProgress: Float,
+    equalItemWidth: Dp,
     modifier: Modifier = Modifier,
     shadowElevation: Dp = 3.dp,
     content: @Composable RowScope.() -> Unit,
 ) {
     require(tabCount > 0)
+    val density = LocalDensity.current
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val columnWidthPx = with(density) { equalItemWidth.toPx() }
+    val barWidth = equalItemWidth * tabCount + NavigationTilePadding * 2
+    val folded = NavIndicatorGeometry.foldProgress(selectionProgress, tabCount)
+    val frames = NavIndicatorGeometry.pillFrames(folded, tabCount, columnWidthPx, rtl = rtl)
+    val pillColor = MaterialTheme.colorScheme.primary.copy(alpha = SELECTED_INDICATOR_ALPHA)
+
     Surface(
         modifier = modifier
-            .fillMaxWidth()
-            .height(NavigationTileBarHeight),
+            .wrapContentWidth()
+            .width(barWidth)
+            .height(NavigationTileBarHeight)
+            .heightIn(min = NavigationTileBarHeight),
         shape = CircleShape,
         color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.94f),
         contentColor = MaterialTheme.colorScheme.onSurface,
         shadowElevation = shadowElevation,
     ) {
-        BoxWithConstraints(
+        Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .fillMaxHeight()
                 .padding(NavigationTilePadding)
                 .clip(CircleShape),
         ) {
-            val itemWidth = maxWidth / tabCount
-            val count = tabCount.toFloat()
-            val folded = foldSelectionProgressForDraw(selectionProgress, tabCount)
-
-            @Composable
-            fun IndicatorPill(progress: Float) {
+            // Indicator chi theo selectionProgress — khong spring owner rieng.
+            frames.forEach { frame ->
                 Box(
                     modifier = Modifier
-                        .offset {
-                            IntOffset(
-                                x = (itemWidth * progress).roundToPx(),
-                                y = 0,
-                            )
-                        }
-                        .width(itemWidth)
+                        .absoluteOffset { IntOffset(frame.xPx.roundToInt(), 0) }
+                        .width(with(density) { frame.widthPx.toDp() })
                         .fillMaxHeight()
-                        .background(
-                            color = MaterialTheme.colorScheme.primary.copy(
-                                alpha = SELECTED_INDICATOR_ALPHA,
-                            ),
-                            shape = CircleShape,
-                        ),
+                        .background(color = pillColor, shape = CircleShape),
                 )
-            }
-
-            IndicatorPill(folded)
-            when {
-                folded > count - 1f -> IndicatorPill(folded - count)
-                folded < 0f -> IndicatorPill(folded + count)
             }
 
             Row(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .fillMaxHeight()
                     .selectableGroup(),
                 verticalAlignment = Alignment.CenterVertically,
                 content = content,

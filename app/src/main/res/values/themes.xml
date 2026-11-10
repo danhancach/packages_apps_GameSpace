@@ -46,6 +46,19 @@
         <item name="dialogCornerRadius">@dimen/gamespace_dialog_corner_radius</item>
     </style>
 
+    <!-- PopupMenu library (preferred mode / ANGLE / unregister): 28dp + SurfaceContainerHigh -->
+    <style name="GameSpaceTheme.PopupMenuOverlapAnchor" parent="ThemeOverlay.Material3">
+        <item name="android:popupMenuStyle">@style/Widget.GameSpace.PopupMenu</item>
+        <item name="popupMenuStyle">@style/Widget.GameSpace.PopupMenu</item>
+        <item name="android:textAppearanceLargePopupMenu">@style/TextAppearance.Material3.BodyLarge</item>
+        <item name="android:textAppearanceSmallPopupMenu">@style/TextAppearance.Material3.BodyLarge</item>
+    </style>
+
+    <style name="Widget.GameSpace.PopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">@drawable/gamespace_popup_menu_bg</item>
+        <item name="android:elevation">3dp</item>
+    </style>
+
     <style name="GameSpaceTheme.Panel" parent="GameSpaceTheme">
         <!-- Dung colorSurfaceBright thay vi @color/surface legacy -->
         <item name="cardBackgroundColor">?attr/colorSurfaceBright</item>
@@ -56,18 +69,20 @@
         <item name="android:textColor">@color/tile_title_color</item>
     </style>
 
-    <!-- CollapsingToolbar typography (ReSukiSU / Updater: 36sp expanded / 22sp collapsed) -->
+    <!-- CollapsingToolbar typography — SettingsLib Expressive (36dp / 22dp, khong scale font) -->
     <style name="TextAppearance.GameSpace.CollapsingToolbar.Expanded" parent="TextAppearance.Material3.DisplaySmall">
-        <item name="android:fontFamily">sans-serif</item>
-        <item name="fontFamily">sans-serif</item>
-        <item name="android:textSize">36sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">36dp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
     <style name="TextAppearance.GameSpace.CollapsingToolbar.Collapsed" parent="TextAppearance.Material3.TitleLarge">
-        <item name="android:fontFamily">sans-serif</item>
-        <item name="fontFamily">sans-serif</item>
-        <item name="android:textSize">22sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">22dp</item>
+        <item name="android:lineHeight">28dp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 

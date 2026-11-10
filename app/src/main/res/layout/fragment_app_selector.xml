@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Add-game: CollapsingToolbar large-title + LSPosed-style search pill (duoi title)
+     + preference list (MiuixPreferenceScrollCoordinator attach trong Fragment).
+     Provenance pill: .logs/updater-scroll-smoothness-20261109-01/screenshots/lsposed-modules-before.png
+     Material search host: /tmp/lsposed-jadx-nav/sources/defpackage/bh0.java (bh0.c) — khong invent Miuix motion.
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coordinator_layout"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurfaceContainer">
+
+    <!-- elevation 8dp + stateListAnimator null (chuan AOSP SettingsLib Expressive): giu AppBar/search tren RV khi stretch translationY < 0 -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurfaceContainer"
+        android:stateListAnimator="@null"
+        android:elevation="@dimen/gamespace_appbar_elevation"
+        android:outlineAmbientShadowColor="@android:color/transparent"
+        android:outlineSpotShadowColor="@android:color/transparent"
+        app:elevation="@dimen/gamespace_appbar_elevation"
+        app:layout_behavior="io.chaldeaprjkt.gamespace.ui.overscroll.MiuixAppBarScrollBehavior">
+
+        <io.chaldeaprjkt.gamespace.ui.motion.MiuixCollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/gamespace_collapsing_toolbar_height"
+            app:toolbarId="@id/toolbar"
+            app:collapsedTitleGravity="start|center_vertical"
+            app:collapsedTitleTextAppearance="@style/TextAppearance.GameSpace.CollapsingToolbar.Collapsed"
+            app:expandedTitleMarginBottom="@dimen/expanded_title_margin_bottom"
+            app:expandedTitleMarginEnd="@dimen/expanded_title_margin_end"
+            app:expandedTitleMarginStart="@dimen/expanded_title_margin_start"
+            app:expandedTitleTextAppearance="@style/TextAppearance.GameSpace.CollapsingToolbar.Expanded"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+            app:scrimVisibleHeightTrigger="@dimen/settingslib_scrim_visible_height_trigger"
+            app:titleCollapseMode="fade">
+
+            <!-- Khop settingslib_expressive_support_toolbar: marginStart+paddingStart=8dp -->
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:layout_marginStart="@dimen/gamespace_toolbar_edge_inset"
+                android:paddingStart="@dimen/gamespace_toolbar_edge_inset"
+                android:background="@android:color/transparent"
+                android:theme="?android:attr/actionBarTheme"
+                app:navigationIcon="@drawable/ic_arrow_back"
+                app:navigationContentDescription="@string/abc_action_bar_up_description"
+                app:layout_collapseMode="pin"
+                app:title="" />
+        </io.chaldeaprjkt.gamespace.ui.motion.MiuixCollapsingToolbarLayout>
+
+        <!-- Search pill pin duoi title — khong scroll flags → luon nhin thay khi IME mo -->
+        <include
+            android:id="@+id/app_selector_search_include"
+            layout="@layout/view_app_selector_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/apps_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="true"
+        android:clipChildren="true"
+        android:paddingTop="@dimen/gamespace_preference_card_gap"
+        android:paddingBottom="@dimen/gamespace_preference_card_margin_horizontal"
+        android:elevation="0dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <TextView
+        android:id="@+id/apps_empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/app_selector_search_empty"
+        android:textAppearance="?android:attr/textAppearanceListItemSecondary"
+        android:textColor="?android:attr/textColorSecondary"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <ProgressBar
+        android:id="@+id/apps_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -61,10 +61,16 @@ import androidx.compose.ui.graphics.painter.*
 import androidx.compose.ui.hapticfeedback.*
 import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
@@ -75,6 +81,7 @@ import io.chaldeaprjkt.gamespace.data.SystemSettings
 import io.chaldeaprjkt.gamespace.gamebar.brightness.*
 import io.chaldeaprjkt.gamespace.gamebar.fps.*
 import io.chaldeaprjkt.gamespace.gamebar.tiles.*
+import io.chaldeaprjkt.gamespace.ui.overscroll.rememberGamespaceStretchOverscroll
 import io.chaldeaprjkt.gamespace.utils.GameModeUtils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -176,77 +183,176 @@ fun GamePanelContent(
     var isEditing by remember { mutableStateOf(false) }
     var panelTab by remember { mutableStateOf(TileCategory.GAME) }
 
-    val scrollState = rememberScrollState()
+    // Mot ScrollState + stretch owner / category — hoist NGOAI AnimatedContent
+    // (tranh 2 owner active khi reverse nhanh).
+    val gameScrollState = rememberScrollState()
+    val systemScrollState = rememberScrollState()
+    val gameStretch = rememberGamespaceStretchOverscroll()
+    val systemStretch = rememberGamespaceStretchOverscroll()
+    val editScrollState = rememberScrollState()
+    val editStretch = rememberGamespaceStretchOverscroll()
 
     val resolvedMaxHeight = if (maxHeight != Dp.Unspecified) maxHeight else {
         (LocalConfiguration.current.screenHeightDp - 64).dp
     }
+    val motion = MaterialTheme.motionScheme
+    val bodyMax = (resolvedMaxHeight - 52.dp).coerceAtLeast(160.dp)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(max = resolvedMaxHeight)
-            .verticalScroll(scrollState)
             .padding(top = if (isEditing) 4.dp else 12.dp, start = 12.dp, bottom = 12.dp, end = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        if (!isEditing) {
-            PanelCategoryTabs(
-                selected = panelTab,
-                onSelected = { panelTab = it },
-                onClose = onClose,
-            )
-
-            when (panelTab) {
-                TileCategory.GAME -> {
-                    HeaderInfoBar(
+        AnimatedContent(
+            targetState = isEditing,
+            transitionSpec = {
+                (fadeIn(animationSpec = motion.fastEffectsSpec()) +
+                    slideInHorizontally(animationSpec = motion.defaultSpatialSpec()) { it / 4 }) togetherWith
+                    (fadeOut(animationSpec = motion.fastEffectsSpec()) +
+                        slideOutHorizontally(animationSpec = motion.defaultSpatialSpec()) { -it / 4 }) using
+                    SizeTransform(clip = true)
+            },
+            label = "panel_edit_route",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clipToBounds(),
+        ) { editing ->
+            // Chi route active nhan pointer/a11y; outgoing bi khoa.
+            val routeActive = isEditing == editing
+            val interactMod = if (routeActive) {
+                Modifier
+            } else {
+                Modifier
+                    .clearAndSetSemantics { }
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent(PointerEventPass.Initial)
+                                event.changes.forEach { it.consume() }
+                            }
+                        }
+                    }
+            }
+            Box(modifier = interactMod.fillMaxWidth()) {
+                if (editing) {
+                    TileEditPanel(
+                        tileRepository = tileRepository,
+                        category = panelTab,
+                        maxHeight = resolvedMaxHeight,
+                        scrollState = editScrollState,
+                        overscrollEffect = editStretch,
+                        interactive = routeActive,
+                        onClose = { isEditing = false },
+                    )
+                } else {
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        headerExpanded = headerExpanded,
-                        time = time,
-                        currentMode = selectedMode,
-                        onModeChange = onModeChange,
-                        fpsInteractor = fpsInteractor,
-                        onToggleExpand = onToggleExpand,
-                        onEditClick = { isEditing = true },
-                        tileRepository = tileRepository
-                    )
-
-                    if (onMenuOpacityChange != null) {
-                        MenuOpacityRow(
-                            opacity = menuOpacity,
-                            onOpacityChange = onMenuOpacityChange,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        PanelCategoryTabs(
+                            selected = panelTab,
+                            onSelected = { panelTab = it },
+                            onClose = onClose,
                         )
-                    }
 
-                    if (apps.isNotEmpty()) {
-                        QuickStartAppSidebar(apps = apps)
-                    }
+                        AnimatedContent(
+                            targetState = panelTab,
+                            transitionSpec = {
+                                fadeIn(animationSpec = motion.fastEffectsSpec()) togetherWith
+                                    fadeOut(animationSpec = motion.fastEffectsSpec()) using
+                                    SizeTransform(clip = true)
+                            },
+                            label = "panel_tab_body",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = bodyMax)
+                                .clipToBounds(),
+                        ) { tab ->
+                            val tabActive = routeActive && panelTab == tab
+                            val scrollState = when (tab) {
+                                TileCategory.GAME -> gameScrollState
+                                TileCategory.SYSTEM -> systemScrollState
+                            }
+                            val stretch = when (tab) {
+                                TileCategory.GAME -> gameStretch
+                                TileCategory.SYSTEM -> systemStretch
+                            }
+                            val tabInteract = if (tabActive) {
+                                Modifier
+                            } else {
+                                Modifier
+                                    .clearAndSetSemantics { }
+                                    .pointerInput(Unit) {
+                                        awaitPointerEventScope {
+                                            while (true) {
+                                                val event = awaitPointerEvent(PointerEventPass.Initial)
+                                                event.changes.forEach { it.consume() }
+                                            }
+                                        }
+                                    }
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .then(tabInteract)
+                                    .verticalScroll(
+                                        state = scrollState,
+                                        enabled = tabActive,
+                                        overscrollEffect = if (tabActive) stretch else null,
+                                    ),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                when (tab) {
+                                    TileCategory.GAME -> {
+                                        HeaderInfoBar(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            headerExpanded = headerExpanded,
+                                            time = time,
+                                            currentMode = selectedMode,
+                                            onModeChange = onModeChange,
+                                            fpsInteractor = fpsInteractor,
+                                            onToggleExpand = onToggleExpand,
+                                            onEditClick = { isEditing = true },
+                                            tileRepository = tileRepository
+                                        )
 
-                    PanelTileSection(
-                        interactor = interactor,
-                        tileRepository = tileRepository,
-                        category = TileCategory.GAME,
-                        showBrightness = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-                TileCategory.SYSTEM -> {
-                    SystemTabToolbar(onEditClick = { isEditing = true })
-                    PanelTileSection(
-                        interactor = interactor,
-                        tileRepository = tileRepository,
-                        category = TileCategory.SYSTEM,
-                        showBrightness = false,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                                        if (onMenuOpacityChange != null) {
+                                            MenuOpacityRow(
+                                                opacity = menuOpacity,
+                                                onOpacityChange = onMenuOpacityChange,
+                                            )
+                                        }
+
+                                        if (apps.isNotEmpty()) {
+                                            QuickStartAppSidebar(apps = apps)
+                                        }
+
+                                        PanelTileSection(
+                                            interactor = interactor,
+                                            tileRepository = tileRepository,
+                                            category = TileCategory.GAME,
+                                            showBrightness = true,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+                                    TileCategory.SYSTEM -> {
+                                        SystemTabToolbar(onEditClick = { isEditing = true })
+                                        PanelTileSection(
+                                            interactor = interactor,
+                                            tileRepository = tileRepository,
+                                            category = TileCategory.SYSTEM,
+                                            showBrightness = false,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        } else {
-            TileEditPanel(
-                tileRepository = tileRepository,
-                category = panelTab,
-                onClose = { isEditing = false }
-            )
         }
     }
 }
@@ -680,7 +786,11 @@ private fun InfoItem(
 fun TileEditPanel(
     tileRepository: TileRepository,
     category: TileCategory,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    maxHeight: Dp = Dp.Unspecified,
+    scrollState: ScrollState,
+    overscrollEffect: androidx.compose.foundation.OverscrollEffect? = null,
+    interactive: Boolean = true,
 ) {
     val activeTiles = tileRepository.tilesFor(category)
     val allTiles = remember(category) { tileRepository.allAvailableTiles(category) }
@@ -697,17 +807,21 @@ fun TileEditPanel(
 
     var activeGridOffset by remember { mutableStateOf(Offset.Zero) }
 
-    val localMaxHeight = (LocalConfiguration.current.screenHeightDp - 64).dp
+    val localMaxHeight = if (maxHeight != Dp.Unspecified) maxHeight else {
+        (LocalConfiguration.current.screenHeightDp - 64).dp
+    }
+    // Scroll/stretch owner hoist tu parent — khong tao overscroll moi trong AnimatedContent exit.
+    val scrollMax = (localMaxHeight - 56.dp).coerceAtLeast(120.dp)
 
     fun persistSelection() {
         tileRepository.updateTileSelection(category, dragDropState.tileIds())
     }
 
+    // Padding do parent GamePanelContent so huu — tranh double pad / duplicate touch inset.
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(max = localMaxHeight)
-            .padding(top = 4.dp, start = 12.dp, end = 12.dp, bottom = 12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -742,8 +856,12 @@ fun TileEditPanel(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
+                .heightIn(max = scrollMax)
+                .verticalScroll(
+                    state = scrollState,
+                    enabled = interactive,
+                    overscrollEffect = if (interactive) overscrollEffect else null,
+                )
         ) {
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -1056,7 +1174,7 @@ fun TileButton(tile: TileAction, modifier: Modifier = Modifier) {
 
     val pressScale by animateFloatAsState(
         targetValue = if (isPressed) 0.92f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
         label = "press_scale",
     )
 

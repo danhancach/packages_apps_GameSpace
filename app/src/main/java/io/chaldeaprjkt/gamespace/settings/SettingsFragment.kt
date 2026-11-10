@@ -141,6 +141,7 @@ class SettingsFragment : Hilt_SettingsFragment(),
         }
 
         applyFloatingBottomNavPadding()
+        (activity as? SettingsActivity)?.applyStatusBarInset(view)
         FloatingNavPaddingStore.addListener(navPaddingListener)
     }
 

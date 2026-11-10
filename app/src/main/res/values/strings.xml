@@ -15,6 +15,8 @@
     <string name="game_list_title">Library</string>
     <string name="library_options_title">Library options</string>
     <string name="app_search_title">Search</string>
+    <string name="app_selector_search_clear">Clear search</string>
+    <string name="app_selector_search_empty">No matching apps</string>
     <string name="add_game">Add game</string>
     <string name="launch_game">Launch game</string>
     <string name="game_list_empty">No games in library yet</string>
@@ -52,6 +54,12 @@
     <string name="per_app_mode_title">Preferred Mode</string>
     <string name="per_app_angle_title">Graphics driver</string>
     <string name="per_app_unregister">Remove %1$s from library</string>
+    <!-- Popup Library Remove — khong chen ten app -->
+    <string name="library_remove_from_library">Remove from library</string>
+    <string name="driver_choice_default">Default</string>
+    <string name="driver_choice_angle">ANGLE</string>
+    <string name="driver_choice_native">Native</string>
+    <string name="library_game_unavailable">Unavailable / uninstalled</string>
 
     <!-- Disable ADB debugging -->
     <string name="adb_disabled_title">Disable USB debugging</string>

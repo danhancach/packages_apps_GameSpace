@@ -22,6 +22,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
+import androidx.preference.PreferenceScreen
+import androidx.preference.PreferenceViewHolder
+import androidx.recyclerview.widget.RecyclerView
+import com.android.settingslib.widget.SettingsPreferenceGroupAdapter
 import androidx.preference.SwitchPreferenceCompat
 
 import com.android.settingslib.widget.SettingsBasePreferenceFragment
@@ -56,14 +60,22 @@ class LibraryFragment : Hilt_LibraryFragment(), Preference.OnPreferenceChangeLis
             apps?.useSelectorResult(it)
         }
 
-    private val perAppResult =
-        registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) {
-            apps?.usePerAppResult(it)
-        }
+    private val navPaddingListener = { applyLibraryListInsets() }
 
-    private val navPaddingListener = { applyFloatingBottomNavPadding() }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Delivery SSOT: FragmentResult song qua Activity recreation (khong Activity lambda).
+        parentFragmentManager.setFragmentResultListener(
+            SettingsActivity.REQUEST_ADD_GAME_SELECTION,
+            this,
+        ) { _, bundle ->
+            val pkg = bundle.getString(SettingsActivity.KEY_ADD_GAME_PACKAGE)
+                ?: return@setFragmentResultListener
+            val list = apps
+                ?: findPreference<AppListPreferences>("gamespace_game_list")
+            list?.useSelectorResult(SettingsActivity.selectorResultOk(pkg))
+        }
+    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.library_preferences, rootKey)
@@ -90,6 +102,16 @@ class LibraryFragment : Hilt_LibraryFragment(), Preference.OnPreferenceChangeLis
         return root
     }
 
+    override fun onCreateAdapter(preferenceScreen: PreferenceScreen): RecyclerView.Adapter<*> =
+        object : SettingsPreferenceGroupAdapter(preferenceScreen, footerDataMap) {
+            override fun onBindViewHolder(holder: PreferenceViewHolder, position: Int) {
+                super.onBindViewHolder(holder, position)
+                val preference = getItem(position) ?: return
+                (preference.parent as? AppListPreferences)
+                    ?.bindCardChromeAfterAdapter(holder, preference)
+            }
+        }
+
     private fun updateLibraryOptions() {
         val vault = findPreference<SwitchPreferenceCompat>(AppSettings.KEY_ICON_VAULT)
         if (vault != null) {
@@ -114,21 +136,23 @@ class LibraryFragment : Hilt_LibraryFragment(), Preference.OnPreferenceChangeLis
         super.onViewCreated(view, savedInstanceState)
 
         apps = findPreference("gamespace_game_list")
-        apps?.onRegisteredAppClick { pkg ->
-            perAppResult.launch(
-                Intent(context, PerAppSettingsActivity::class.java).apply {
-                    putExtra(PerAppSettingsActivity.EXTRA_PACKAGE, pkg)
-                }
-            )
-        }
+        // Card click = launch; chevron = LibraryModeSelectionPopup (khong PerAppSettings).
 
         findPreference<Preference>(AppListPreferences.KEY_ADD_GAME)
             ?.setOnPreferenceClickListener {
-                selectorResult.launch(Intent(context, AppSelectorActivity::class.java))
+                val host = activity as? SettingsActivity
+                if (host != null) {
+                    // In-Activity Miuix submenu; selection qua FragmentResult listener.
+                    host.openAddGameSelector()
+                } else {
+                    // Fallback neu Library khong nam trong SettingsActivity.
+                    selectorResult.launch(Intent(context, AppSelectorActivity::class.java))
+                }
                 true
             }
 
-        applyFloatingBottomNavPadding()
+        applyLibraryListInsets()
+        (activity as? SettingsActivity)?.applyStatusBarInset(view)
         FloatingNavPaddingStore.addListener(navPaddingListener)
     }
 
@@ -140,7 +164,33 @@ class LibraryFragment : Hilt_LibraryFragment(), Preference.OnPreferenceChangeLis
     override fun onResume() {
         super.onResume()
         apps?.updateAppList()
+        applyLibraryListInsets()
+    }
+
+    /**
+     * Library-only width inset.
+     *
+     * Prior effective outer (card qua hep):
+     * - List H pad = listPreferredItemPadding* = 16dp
+     *   (`SettingsTheme/res/values-v36/themes_expressive.xml:32-35` →
+     *   `settingslib_expressive_space_small1` = 16dp)
+     * - + card `layout_marginHorizontal` 16dp
+     *   (`library_item.xml` → `gamespace_preference_card_margin_horizontal`)
+     * - = 32dp moi ben toi canh card.
+     * Sau Preference.onBind, `SettingsPreferenceGroupAdapter.onBindViewHolder`
+     * (`SettingsPreferenceGroupAdapter.kt:106-111`) goi `updateBackground` →
+     * `setPaddingRelative(mGroupPaddingStart, …)` voi
+     * `mGroupPaddingStart = small1 * 2 = 32dp` (`:67-72`, `:241-252`, `:280-281`)
+     * — ghi de padding XML hang; KHONG xoa margin. Day la inset NOI dung trong card.
+     *
+     * Corrected: list H = 0 (chi Library) → outer margin card dung 1×16dp;
+     * AppListPreferences restore row pad 16dp sau adapter overwrite.
+     * Settings van dung applyFloatingBottomNavPadding (giu H pad theme).
+     */
+    private fun applyLibraryListInsets() {
         applyFloatingBottomNavPadding()
+        val list = listView ?: return
+        list.setPadding(0, list.paddingTop, 0, list.paddingBottom)
     }
 
     override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean {

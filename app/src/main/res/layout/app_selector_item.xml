@@ -15,18 +15,25 @@
     limitations under the License.
   -->
 
-<!-- Anatomy Expressive: root minHeight 72dp, pad ngang 16dp, pad doc 0; text frame pad doc 16dp; icon frame 40dp + marginEnd 12dp -->
+<!--
+     Anatomy Expressive AOSP 17: the Top/Center/Bottom (bg gan trong Adapter),
+     margin ngang 16dp, khe doc 2dp (ItemDecoration), minHeight 72dp,
+     pad ngang 16dp / pad doc 0 tren root; text frame pad doc 16dp; icon 40dp + marginEnd 12dp.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/app_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/gamespace_preference_card_margin_horizontal"
     android:minHeight="@dimen/gamespace_preference_row_min_height"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingStart="@dimen/gamespace_preference_row_padding_start"
     android:paddingEnd="@dimen/gamespace_preference_row_padding_end"
     android:paddingTop="0dp"
-    android:paddingBottom="0dp">
+    android:paddingBottom="0dp"
+    android:clickable="true"
+    android:focusable="true">
 
     <ImageView
         android:id="@android:id/icon"

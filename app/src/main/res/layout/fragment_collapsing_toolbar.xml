@@ -14,12 +14,14 @@
         android:layout_height="wrap_content"
         android:background="?attr/colorSurfaceContainer"
         app:elevation="0dp"
+        app:layout_behavior="io.chaldeaprjkt.gamespace.ui.overscroll.MiuixAppBarScrollBehavior"
         app:liftOnScroll="true">
 
-        <com.google.android.material.appbar.CollapsingToolbarLayout
+        <io.chaldeaprjkt.gamespace.ui.motion.MiuixCollapsingToolbarLayout
             android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/gamespace_collapsing_toolbar_height"
+            app:collapsedTitleGravity="start|center_vertical"
             app:collapsedTitleTextAppearance="@style/TextAppearance.GameSpace.CollapsingToolbar.Collapsed"
             app:expandedTitleMarginBottom="@dimen/expanded_title_margin_bottom"
             app:expandedTitleMarginEnd="@dimen/expanded_title_margin_end"
@@ -36,7 +38,7 @@
                 android:background="@android:color/transparent"
                 app:layout_collapseMode="pin"
                 app:title="" />
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
+        </io.chaldeaprjkt.gamespace.ui.motion.MiuixCollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <FrameLayout

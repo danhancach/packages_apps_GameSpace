@@ -19,9 +19,20 @@
     <dimen name="notification_vertical_offset_landscape">48dp</dimen>
     <dimen name="notification_vertical_offset_portrait">36dp</dimen>
 
-    <!-- CollapsingToolbar Expressive (ReSukiSU / Updater pattern) -->
+    <!-- CollapsingToolbar Expressive — SettingsLib v36 SSOT -->
+    <!-- toolbar: marginStart+paddingStart = settingslib_expressive_space_extrasmall4 (8dp) -->
+    <dimen name="gamespace_toolbar_edge_inset">8dp</dimen>
+    <!-- AppCompat contentInsetStartWithNavigation: 8pad + 40 back + 24 gap = 72dp -->
+    <dimen name="gamespace_toolbar_content_inset_with_nav">72dp</dimen>
+    <!-- Canh quang hoc settingslib_expressive_icon_back (layer-list size 40dp) -->
+    <dimen name="gamespace_expressive_back_icon_size">40dp</dimen>
+    <!-- Khoang giua canh phai vong back 40dp → chu (do AOSP screenshot: 22.6dp, lay 22dp chuan) -->
+    <dimen name="gamespace_collapsed_title_nav_gap">22dp</dimen>
+    <!-- Z-order AppBar tren list khi stretch translationY (AOSP elevation 8dp, shadow tat) -->
+    <dimen name="gamespace_appbar_elevation">8dp</dimen>
     <dimen name="gamespace_collapsing_toolbar_height">152dp</dimen>
     <dimen name="settingslib_scrim_visible_height_trigger">137dp</dimen>
+    <!-- expandedTitleMargin* = settingslib_expressive_space_small4 / medium1 -->
     <dimen name="expanded_title_margin_start">24dp</dimen>
     <dimen name="expanded_title_margin_end">24dp</dimen>
     <dimen name="expanded_title_margin_bottom">32dp</dimen>
@@ -41,4 +52,16 @@
 
     <!-- Dialog / popup corner radius -->
     <dimen name="gamespace_dialog_corner_radius">28dp</dimen>
+
+    <!-- Add-game LSPosed-style search pill (modules screenshot; Material surface, khong Miuix motion) -->
+    <dimen name="gamespace_search_pill_corner">28dp</dimen>
+    <dimen name="gamespace_search_pill_min_height">52dp</dimen>
+    <dimen name="gamespace_search_pill_margin_horizontal">16dp</dimen>
+    <dimen name="gamespace_search_pill_margin_top">0dp</dimen>
+    <dimen name="gamespace_search_pill_margin_bottom">12dp</dimen>
+    <dimen name="gamespace_search_pill_padding_horizontal">16dp</dimen>
+    <dimen name="gamespace_search_pill_icon_size">20dp</dimen>
+
+    <!-- Library selection chevron (LSPosed kieu UI — nho, mong) -->
+    <dimen name="gamespace_library_chevron_size">10dp</dimen>
 </resources>

@@ -58,7 +58,9 @@ class PerAppSettingsFragment : Hilt_PerAppSettingsFragment(),
         collapsingToolbar.title = getString(R.string.per_app_title)
 
         val toolbar = root.findViewById<MaterialToolbar>(R.id.toolbar)
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_left)
+        // Mui ten back chuan he thong Android
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back)
+        toolbar.setNavigationContentDescription(androidx.appcompat.R.string.abc_action_bar_up_description)
         toolbar.setNavigationOnClickListener {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }

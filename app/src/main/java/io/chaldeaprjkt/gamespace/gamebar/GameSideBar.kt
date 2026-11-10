@@ -58,7 +58,7 @@ import io.chaldeaprjkt.gamespace.gamebar.fps.*
 import io.chaldeaprjkt.gamespace.gamebar.mapper.MapperController
 import io.chaldeaprjkt.gamespace.gamebar.tiles.*
 import io.chaldeaprjkt.gamespace.utils.*
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
@@ -85,6 +85,8 @@ class GameSidebar(
     private var safeArea = 0
     private var shouldClose = false
     private var panelShowing = false
+    /** Tang moi lan showPanel — teardown chi hop le khi session + view con khop. */
+    private var panelSessionId = 0L
 
     private lateinit var gameBarView: ComposeView
     private var panelView: View? = null
@@ -292,7 +294,9 @@ class GameSidebar(
         panelLayoutParam.height = WindowManager.LayoutParams.WRAP_CONTENT
 
         menuOpacityState.intValue = appSettings.menuOpacity.coerceIn(35, 100)
-        val pv = createPanelView()
+        panelSessionId += 1L
+        val session = panelSessionId
+        val pv = createPanelView(session)
         panelView = pv
 
         try {
@@ -306,6 +310,7 @@ class GameSidebar(
             brightnessInteractor.dispose()
             fpsInteractor.dispose()
             panelShowing = false
+            panelView = null
         }
     }
 
@@ -342,6 +347,8 @@ class GameSidebar(
         if (!panelShowing) return
         panelShowing = false
         panelDismissing.value = true
+        // Invalidate session — stale dismiss callback khong goi remove tren panel moi.
+        panelSessionId += 1L
 
         brightnessInteractor.dispose()
         fpsInteractor.dispose()
@@ -353,7 +360,14 @@ class GameSidebar(
         if (::gameBarView.isInitialized) gameBarView.visibility = View.VISIBLE
     }
 
-    private fun createPanelView(): ComposeView {
+    private fun animatorDurationScale(): Float =
+        Settings.Global.getFloat(
+            context.contentResolver,
+            Settings.Global.ANIMATOR_DURATION_SCALE,
+            1f,
+        ).coerceAtLeast(0f)
+
+    private fun createPanelView(session: Long): ComposeView {
         return ComposeView(context).apply {
             setBackgroundColor(android.graphics.Color.TRANSPARENT)
             repeatWhenAttached {
@@ -364,7 +378,7 @@ class GameSidebar(
                             colorScheme = rememberGameBarColorScheme(appSettings.gameBarTheme),
                             motionScheme = MotionScheme.expressive(),
                         ) {
-                            PanelContent()
+                            PanelContent(sessionId = session, panelHost = this@apply)
                         }
                     }
                 }
@@ -373,50 +387,53 @@ class GameSidebar(
     }
 
     @Composable
-    private fun PanelContent() {
+    private fun PanelContent(sessionId: Long, panelHost: View) {
         val apps = remember { getQuickStartApps(context) }
         val dismissing by panelDismissing
-
-        var entered by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) { entered = true }
-
-        val show = entered && !dismissing
+        val motion = MaterialTheme.motionScheme
+        val show = !dismissing
         val slideSign = if (circleOnLeft) -1f else 1f
+        val closedSlide = slideSign * 400f
 
-        LaunchedEffect(dismissing) {
-            if (dismissing) {
-                // Backup neu finishedListener khong chay (van goi remove + scheduleIdle).
-                delay(280)
-                handler.post { removePanelAndRestoreCircle() }
+        // updateTransition: retarget lien tuc, khong claim .velocity sau cancel Animatable.
+        val shellState = remember(sessionId) { MutableTransitionState(false) }
+        shellState.targetState = show
+        val transition = updateTransition(transitionState = shellState, label = "panel_shell")
+        val slideOffset by transition.animateFloat(
+            transitionSpec = { motion.defaultSpatialSpec() },
+            label = "panel_slide",
+        ) { open -> if (open) 0f else closedSlide }
+        val panelAlpha by transition.animateFloat(
+            transitionSpec = { motion.fastEffectsSpec() },
+            label = "panel_alpha",
+        ) { open -> if (open) 1f else 0f }
+        val panelScale by transition.animateFloat(
+            transitionSpec = { motion.fastSpatialSpec() },
+            label = "panel_scale",
+        ) { open -> if (open) 1f else 0.88f }
+
+        // Teardown CHI khi explicit dismiss + session/view con khop (chong stale sau rotate/reopen).
+        // animationScale=0: transition settle ngay; van gate identity.
+        LaunchedEffect(dismissing, sessionId) {
+            if (!dismissing) return@LaunchedEffect
+            val capturedSession = sessionId
+            val capturedView = panelHost
+            snapshotFlow {
+                Triple(
+                    dismissing,
+                    transition.isRunning,
+                    transition.currentState to transition.targetState,
+                )
+            }.first { (stillDismissing, running, states) ->
+                !stillDismissing || (!running && !states.first && !states.second)
+            }
+            if (!dismissing) return@LaunchedEffect
+            handler.post {
+                if (panelSessionId == capturedSession && panelView === capturedView) {
+                    removePanelAndRestoreCircle()
+                }
             }
         }
-
-        val slideOffset by animateFloatAsState(
-            targetValue = if (show) 0f else slideSign * 400f,
-            animationSpec = tween(
-                durationMillis = if (show) 350 else 250,
-                easing = if (show) FastOutSlowInEasing else FastOutLinearInEasing,
-            ),
-            label = "panel_slide",
-            finishedListener = {
-                if (dismissing) handler.post { removePanelAndRestoreCircle() }
-            },
-        )
-
-        val panelAlpha by animateFloatAsState(
-            targetValue = if (show) 1f else 0f,
-            animationSpec = tween(if (show) 280 else 180),
-            label = "panel_alpha",
-        )
-
-        val panelScale by animateFloatAsState(
-            targetValue = if (show) 1f else 0.88f,
-            animationSpec = tween(
-                durationMillis = if (show) 350 else 220,
-                easing = if (show) FastOutSlowInEasing else FastOutLinearInEasing,
-            ),
-            label = "panel_scale",
-        )
 
         val density = LocalDensity.current
         val barTopPx = gameBarLayoutParam.y
@@ -439,6 +456,7 @@ class GameSidebar(
         }
 
         // Chi wrap panel — khong fill man hinh (de NOT_TOUCH_MODAL cho game nhan cham ngoai).
+        // panelLayoutParam WRAP_CONTENT + NOT_TOUCH_MODAL tach biet gameBarLayoutParam pill.
         Box(
             modifier = Modifier.graphicsLayer {
                 translationX = slideOffset

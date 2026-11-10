@@ -17,6 +17,7 @@ package io.chaldeaprjkt.gamespace.settings
 
 import androidx.preference.PreferenceFragmentCompat
 import io.chaldeaprjkt.gamespace.R
+import io.chaldeaprjkt.gamespace.ui.overscroll.MiuixPreferenceScrollCoordinator
 import java.util.concurrent.CopyOnWriteArrayList
 
 /** Chieu cao Compose floating nav — dung de padding preference list. */
@@ -40,13 +41,18 @@ object FloatingNavPaddingStore {
     }
 }
 
-/** Padding day cho floating bottom nav — tranh che preference cuoi. */
+/**
+ * Padding day cho floating bottom nav — tranh che preference cuoi.
+ * Chi doi paddingBottom; GIU pad ngang hien co (Settings van can list H inset).
+ * Library zero H rieng: [LibraryFragment.applyLibraryListHorizontalInset].
+ */
 internal fun PreferenceFragmentCompat.applyFloatingBottomNavPadding() {
     val list = listView ?: return
     val measured = FloatingNavPaddingStore.heightPx
     val fallback = resources.getDimensionPixelSize(R.dimen.gamespace_bottom_nav_content_padding)
     val extra = if (measured > 0) measured else fallback
-    // Replace bottom padding rather than stacking on every resume.
     list.setPadding(list.paddingLeft, list.paddingTop, list.paddingRight, extra)
     list.clipToPadding = false
+    // Miuix phase scroll: AppBar header↔content + stretch subordinate.
+    MiuixPreferenceScrollCoordinator.attach(list)
 }

@@ -22,6 +22,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -248,17 +249,30 @@ public class CustomSeekBarPreference extends SliderPreference {
 
         updatePlusMinusEnabledStates(holder);
 
-        if (slider != null && summaryView != null) {
-            slider.addOnChangeListener((s, value, fromUser) -> {
-                if (fromUser) {
-                    summaryView.setText(composeSummary(mUserSummary, (int) value));
-                    updatePlusMinusEnabledStates(holder);
-                }
-            });
+        if (slider != null) {
+            // Rebind / recycle: clear listener cu de tranh stack + stale holder.
+            slider.clearOnChangeListeners();
+            slider.clearOnSliderTouchListeners();
+            // Drag do CANCEL / detach giua chuoi: reset flag preference-level.
+            mInUserDrag = false;
+
+            if (summaryView != null) {
+                slider.addOnChangeListener((s, value, fromUser) -> {
+                    if (fromUser) {
+                        summaryView.setText(composeSummary(mUserSummary, (int) value));
+                        updatePlusMinusEnabledStates(holder);
+                    }
+                });
+            }
             slider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
                 @Override
                 public void onStartTrackingTouch(@NonNull Slider s) {
                     mInUserDrag = true;
+                    // Belt: claim parent disallow som (AxisGuard cung hit-test DOWN).
+                    final ViewParent parent = s.getParent();
+                    if (parent != null) {
+                        parent.requestDisallowInterceptTouchEvent(true);
+                    }
                 }
 
                 @Override

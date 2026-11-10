@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Popup hanh dong library: SurfaceContainerHigh + 28dp (dialog-like, khong Menu 4dp) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="?attr/colorSurfaceContainerHigh" />
+    <corners android:radius="@dimen/gamespace_dialog_corner_radius" />
+    <padding
+        android:top="8dp"
+        android:bottom="8dp" />
+</shape>
