@@ -134,7 +134,12 @@ class AppSettings @Inject constructor(private val context: Context) {
         get() = db.getBoolean(KEY_ICON_VAULT, false)
         set(value) = db.edit().putBoolean(KEY_ICON_VAULT, value).apply()
 
+    var refreshRateLock: Int
+        get() = db.getString(KEY_REFRESH_RATE_LOCK, "0")?.toIntOrNull() ?: 0
+        set(value) = db.edit().putString(KEY_REFRESH_RATE_LOCK, value.toString()).apply()
+
     companion object {
+        const val KEY_REFRESH_RATE_LOCK = "gamespace_refresh_rate_lock"
         const val KEY_AUTO_BRIGHTNESS_DISABLE = "gamespace_auto_brightness_disabled"
         const val KEY_3SCREENSHOT_DISABLE = "gamespace_tfgesture_disabled"
         const val KEY_STAY_AWAKE = "gamespace_stay_awake"

@@ -16,8 +16,8 @@
     <string name="app_search_title">Tìm kiếm</string>
     <string name="app_selector_search_clear">Xóa tìm kiếm</string>
     <string name="app_selector_search_empty">Không có ứng dụng khớp</string>
-    <string name="add_game">Add game</string>
-    <string name="launch_game">Launch game</string>
+    <string name="add_game">Thêm trò chơi</string>
+    <string name="launch_game">Khởi chạy trò chơi</string>
     <string name="game_list_empty">Chưa có trò chơi nào trong thư viện</string>
     <!-- Icon vault (AxSandbox) -->
     <string name="icon_vault_title">Lưu trữ biểu tượng trò chơi</string>

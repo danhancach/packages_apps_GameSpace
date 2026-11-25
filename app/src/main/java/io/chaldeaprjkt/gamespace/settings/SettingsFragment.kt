@@ -24,6 +24,7 @@ import android.os.Vibrator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.SwitchPreferenceCompat
@@ -37,6 +38,7 @@ import io.chaldeaprjkt.gamespace.R
 import io.chaldeaprjkt.gamespace.data.AppSettings
 import io.chaldeaprjkt.gamespace.data.GameOptimizationManager
 import io.chaldeaprjkt.gamespace.data.SystemSettings
+import io.chaldeaprjkt.gamespace.gamebar.RefreshRateLock
 import io.chaldeaprjkt.gamespace.preferences.QuickStartAppPreference
 import io.chaldeaprjkt.gamespace.preferences.QuickStartAppPreferenceDialogFragment
 
@@ -125,6 +127,21 @@ class SettingsFragment : Hilt_SettingsFragment(),
         if (!isHighTouchAvailable()) {
             removeInGamePreference(AppSettings.KEY_AUTO_HIGH_TOUCH)
         }
+
+        setupRefreshRateLock()
+    }
+
+    private fun setupRefreshRateLock() {
+        val pref = findPreference<ListPreference>(AppSettings.KEY_REFRESH_RATE_LOCK) ?: return
+        val rates = RefreshRateLock.availableRates(requireContext())
+        if (rates.size < 2) {
+            findPreference<PreferenceCategory>("in_game_preferences")?.removePreference(pref)
+            return
+        }
+        pref.entries = arrayOf<CharSequence>(getString(R.string.refresh_rate_lock_none)) +
+                rates.map { getString(R.string.refresh_rate_lock_entry, it) }
+        pref.entryValues = arrayOf<CharSequence>("0") + rates.map { it.toString() }
+        if (pref.findIndexOfValue(pref.value) < 0) pref.value = "0"
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -30,6 +30,7 @@ object TileCategories {
         "notification",
         "stay_awake",
         "fps_info",
+        "refresh_rate_lock",
         "boost_memory",
         "touch_boost",
         "hspc",
@@ -43,6 +44,7 @@ object TileCategories {
     /** Thu tu mac dinh hien tren tab Game (chi id ton tai moi dung). */
     val DEFAULT_GAME_ORDER = listOf(
         "fps_info",
+        "refresh_rate_lock",
         "hspc",
         "high_touch",
         "boost_memory",
